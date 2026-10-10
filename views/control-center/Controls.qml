@@ -9,7 +9,7 @@ import Quickshell.Services.UPower
 
 // What the control center's controls show and do: network, sound,
 // microphone, Bluetooth, battery and power profile, keyboard layout, Focus,
-// Night Shift, Game Mode and brightness, plus which controls are shown and in
+// Night Shift, Game Mode, Stay Awake and brightness, plus which controls are shown and in
 // what order (saved in the island's settings), enabled addons' tiles among
 // them (see addons/Addon.qml). Nothing here is drawn.
 Item {
@@ -19,7 +19,7 @@ Item {
 
   // --- Which controls, in what order ---
 
-  readonly property var known: ["wifi", "bluetooth", "focus", "game", "night", "power", "keyboard", "sound", "microphone", "microphoneMute", "display"]
+  readonly property var known: ["wifi", "bluetooth", "focus", "game", "night", "power", "keyboard", "sound", "microphone", "microphoneMute", "awake", "display"]
     .concat(host.addons.tiles.map(function(tile) { return tile.key }))
   readonly property var keys: {
     var known = controls.known
@@ -42,15 +42,18 @@ Item {
   function title(key) {
     var tile = host.addons.tileFor(key)
     if (tile) return String(tile.title || key)
-    var names = { wifi: "Wi-Fi / Ethernet", bluetooth: "Bluetooth", focus: "Focus", game: "Game Mode", night: "Night Shift", power: "Power Mode", keyboard: "Keyboard", sound: "Sound", microphone: "Microphone", microphoneMute: "Microphone", display: "Display" }
+    var names = { wifi: "Wi-Fi / Ethernet", bluetooth: "Bluetooth", focus: "Focus", game: "Game Mode", night: "Night Shift", power: "Power Mode", keyboard: "Keyboard", awake: "Stay Awake", sound: "Sound", microphone: "Microphone", microphoneMute: "Microphone", display: "Display" }
     return names[key] || key
   }
+  // Controls that stay out of the layout until added from the gallery, even
+  // for settings saved before they existed.
+  readonly property var optIn: ({ microphoneMute: "microphoneMuteControl", awake: "stayAwakeControl" })
   function isShown(key) {
-    if (key === "microphoneMute" && !settings.microphoneMuteControl) return false
+    if (optIn[key] && !settings[optIn[key]]) return false
     return String(settings.controlCenterHidden || "").split(",").indexOf(key) === -1
   }
   function setShown(key, shown) {
-    if (key === "microphoneMute") settings.microphoneMuteControl = shown
+    if (optIn[key]) settings[optIn[key]] = shown
     var hidden = String(settings.controlCenterHidden || "").split(",").filter(function(item) { return item !== "" && item !== key })
     if (!shown) hidden.push(key)
     settings.controlCenterHidden = hidden.join(",")
@@ -166,12 +169,15 @@ Item {
   // --- Shell services ---
   readonly property var notifications: host.shell ? host.shell.firstPartyServiceFor("omarchy.notifications") : null
   readonly property var nightlight: host.shell ? host.shell.firstPartyServiceFor("omarchy.nightlight") : null
+  readonly property var idle: host.shell ? host.shell.firstPartyServiceFor("omarchy.idle") : null
   readonly property bool dnd: notifications ? !!notifications.doNotDisturb : false
   readonly property bool nightOn: nightlight ? !!nightlight.enabled : false
+  readonly property bool stayAwake: idle ? !!idle.stayAwake : false
   function controlPresent(key) {
     var tile = host.addons.tileFor(key)
     if (tile) return tile.present !== false
     if (key === "night") return !!nightlight
+    if (key === "awake") return !!idle
     if (isMicrophoneControl(key)) return !!(microphoneSource && microphoneSource.audio)
     if (key === "sound") return !!(sink && sink.audio)
     if (key === "display") return brightnessAvailable
@@ -188,6 +194,7 @@ Item {
     if (key === "bluetooth") return btAdapter && btAdapter.enabled ? "󰂯" : "󰂲"
     if (key === "focus") return "󰍶"
     if (key === "game") return "󰊗"
+    if (key === "awake") return stayAwake ? "󰅶" : "󰛊"
     if (key === "power") return profileIcons[profileName] || "󰾅"
     if (key === "keyboard") return "󰌌"
     return "󰖔"
@@ -201,6 +208,7 @@ Item {
     if (key === "bluetooth") return !btAdapter ? "Unavailable" : !btAdapter.enabled ? "Off" : btConnected ? String(btConnected.name || "Connected") : "On"
     if (key === "focus") return dnd ? "On" : "Off"
     if (key === "game") return gameMode ? "On" : "Off"
+    if (key === "awake") return stayAwake ? "On" : "Off"
     if (key === "power") return profileLabels[profileName] || "Balanced"
     if (key === "keyboard") return keyboardLabel
     return nightOn ? "On" : "Off"
@@ -211,6 +219,7 @@ Item {
     if (key === "bluetooth") return !!(btAdapter && btAdapter.enabled)
     if (key === "focus") return dnd
     if (key === "game") return gameMode
+    if (key === "awake") return stayAwake
     if (key === "power") return profileName !== "balanced"
     if (key === "keyboard") return false
     return nightOn
@@ -230,6 +239,7 @@ Item {
     else if (key === "bluetooth" && btAdapter) btAdapter.enabled = !btAdapter.enabled
     else if (key === "focus" && notifications) notifications.setDoNotDisturb(!dnd)
     else if (key === "game") setGameMode(!gameMode)
+    else if (key === "awake" && idle) idle.setIdleEnabled(stayAwake)
     else if (key === "power") cycleProfile()
     else if (key === "keyboard") nextKeyboardLayout()
     else if (key === "night" && nightlight) nightlight.setNightlight(!nightOn)
