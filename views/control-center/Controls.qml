@@ -9,7 +9,7 @@ import Quickshell.Services.UPower
 
 // What the control center's controls show and do: network, sound,
 // microphone, Bluetooth, battery and power profile, keyboard layout, Focus,
-// Night Shift, Game Mode, Stay Awake and brightness, plus which controls are shown and in
+// Night Shift, Game Mode, Stay Awake, Screensaver and brightness, plus which controls are shown and in
 // what order (saved in the island's settings), enabled addons' tiles among
 // them (see addons/Addon.qml). Nothing here is drawn.
 Item {
@@ -19,7 +19,7 @@ Item {
 
   // --- Which controls, in what order ---
 
-  readonly property var known: ["wifi", "bluetooth", "focus", "game", "night", "power", "keyboard", "sound", "microphone", "microphoneMute", "awake", "display"]
+  readonly property var known: ["wifi", "bluetooth", "focus", "game", "night", "power", "keyboard", "sound", "microphone", "microphoneMute", "awake", "screensaver", "display"]
     .concat(host.addons.tiles.map(function(tile) { return tile.key }))
   readonly property var keys: {
     var known = controls.known
@@ -42,12 +42,12 @@ Item {
   function title(key) {
     var tile = host.addons.tileFor(key)
     if (tile) return String(tile.title || key)
-    var names = { wifi: "Wi-Fi / Ethernet", bluetooth: "Bluetooth", focus: "Focus", game: "Game Mode", night: "Night Shift", power: "Power Mode", keyboard: "Keyboard", awake: "Stay Awake", sound: "Sound", microphone: "Microphone", microphoneMute: "Microphone", display: "Display" }
+    var names = { wifi: "Wi-Fi / Ethernet", bluetooth: "Bluetooth", focus: "Focus", game: "Game Mode", night: "Night Shift", power: "Power Mode", keyboard: "Keyboard", awake: "Stay Awake", screensaver: "Screensaver", sound: "Sound", microphone: "Microphone", microphoneMute: "Microphone", display: "Display" }
     return names[key] || key
   }
   // Controls that stay out of the layout until added from the gallery, even
   // for settings saved before they existed.
-  readonly property var optIn: ({ microphoneMute: "microphoneMuteControl", awake: "stayAwakeControl" })
+  readonly property var optIn: ({ microphoneMute: "microphoneMuteControl", awake: "stayAwakeControl", screensaver: "screensaverControl" })
   function isShown(key) {
     if (optIn[key] && !settings[optIn[key]]) return false
     return String(settings.controlCenterHidden || "").split(",").indexOf(key) === -1
@@ -64,6 +64,7 @@ Item {
     if (!brightnessRead.running) brightnessRead.running = true
     if (!gameModeRead.running) gameModeRead.running = true
     if (!keyboardRead.running) keyboardRead.running = true
+    if (!screensaverRead.running) screensaverRead.running = true
   }
 
   // --- Network ---
@@ -195,6 +196,7 @@ Item {
     if (key === "focus") return "󰍶"
     if (key === "game") return "󰊗"
     if (key === "awake") return stayAwake ? "󰅶" : "󰛊"
+    if (key === "screensaver") return screensaverOn ? "󱄄" : "󰶐"
     if (key === "power") return profileIcons[profileName] || "󰾅"
     if (key === "keyboard") return "󰌌"
     return "󰖔"
@@ -209,6 +211,7 @@ Item {
     if (key === "focus") return dnd ? "On" : "Off"
     if (key === "game") return gameMode ? "On" : "Off"
     if (key === "awake") return stayAwake ? "On" : "Off"
+    if (key === "screensaver") return screensaverOn ? "On" : "Off"
     if (key === "power") return profileLabels[profileName] || "Balanced"
     if (key === "keyboard") return keyboardLabel
     return nightOn ? "On" : "Off"
@@ -220,6 +223,7 @@ Item {
     if (key === "focus") return dnd
     if (key === "game") return gameMode
     if (key === "awake") return stayAwake
+    if (key === "screensaver") return screensaverOn
     if (key === "power") return profileName !== "balanced"
     if (key === "keyboard") return false
     return nightOn
@@ -240,6 +244,7 @@ Item {
     else if (key === "focus" && notifications) notifications.setDoNotDisturb(!dnd)
     else if (key === "game") setGameMode(!gameMode)
     else if (key === "awake" && idle) idle.setIdleEnabled(stayAwake)
+    else if (key === "screensaver") setScreensaver(!screensaverOn)
     else if (key === "power") cycleProfile()
     else if (key === "keyboard") nextKeyboardLayout()
     else if (key === "night" && nightlight) nightlight.setNightlight(!nightOn)
@@ -260,6 +265,21 @@ Item {
     gameMode = on
     gameModeWrite.command = ["hyprctl", "eval", "hl.config({ animations = { enabled = " + (on ? "false" : "true") + " } })"]
     gameModeWrite.running = true
+  }
+
+  // --- Screensaver: Omarchy's "screensaver-off" toggle, as in its menu but
+  // without the notification ---
+  property bool screensaverOn: true
+  Process {
+    id: screensaverRead
+    command: ["omarchy-toggle-enabled", "screensaver-off"]
+    onExited: function(code) { controls.screensaverOn = code !== 0 }
+  }
+  Process { id: screensaverWrite; onExited: screensaverRead.running = true }
+  function setScreensaver(on) {
+    screensaverOn = on
+    screensaverWrite.command = ["omarchy-toggle", "screensaver-off", on ? "off" : "on"]
+    screensaverWrite.running = true
   }
 
   // --- Brightness (the Display card hides when the output has no control) ---
