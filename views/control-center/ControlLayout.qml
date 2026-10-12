@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Effects
 import "../../components"
 
 // The control center's grid of controls, and editing it: in edit mode the
@@ -11,7 +12,7 @@ ColumnLayout {
   required property var center
   readonly property var controls: center.controls
   readonly property bool editMode: center.editMode
-  spacing: 10
+  spacing: center.gap
 
   property string draggedKey: ""
   property bool dragFromGallery: false
@@ -19,6 +20,8 @@ ColumnLayout {
   property bool removeDropActive: false
   property point dragPoint: Qt.point(0, 0)
   property var previewOrder: []
+  // Room around the grid in edit mode for the − badges on the cards' corners.
+  readonly property real inset: editMode ? 8 : 0
   onEditModeChanged: {
     endDrag()
     controlLayoutScroll.contentY = 0
@@ -137,7 +140,10 @@ ColumnLayout {
   Flickable {
     id: controlLayoutScroll
     Layout.fillWidth: true
-    Layout.preferredHeight: layout.center.editMode ? 300 : cardArea.positions.height
+    // In edit mode it fits the grid, up to a scrolling 300.
+    Layout.preferredHeight: layout.center.editMode
+      ? Math.min(300, Math.max(cardArea.height, layout.center.tileHeight + 2 * layout.inset))
+      : cardArea.positions.height
     contentWidth: width
     contentHeight: cardArea.height
     interactive: layout.center.editMode
@@ -158,33 +164,36 @@ ColumnLayout {
       height: positions.height
       readonly property var positions: {
         var result = {}
-        var gap = 10
-        var halfWidth = (width - gap) / 2
-        var rowY = 0
+        var gap = layout.center.gap
+        var tileHeight = layout.center.tileHeight
+        var inset = layout.inset
+        var fullWidth = width - 2 * inset
+        var halfWidth = (fullWidth - gap) / 2
+        var rowY = inset
         var halfUsed = false
         for (var i = 0; i < layout.visibleControlKeys.length; i++) {
           var key = layout.visibleControlKeys[i]
           var wide = layout.controls.controlWide(key)
-          var cardHeight = wide ? 100 : 74
+          var cardHeight = wide ? layout.center.sectionHeight : tileHeight
           if (key === "sound" && layout.center.outputsOpen && !layout.center.editMode) cardHeight += layout.controls.outputs.length * 40
           if (key === "microphone" && layout.center.inputsOpen && !layout.center.editMode) cardHeight += layout.controls.inputs.length * 40
           if (wide) {
-            if (halfUsed) { rowY += 74 + gap; halfUsed = false }
-            result[key] = { x: 0, y: rowY, width: width, height: cardHeight }
+            if (halfUsed) { rowY += tileHeight + gap; halfUsed = false }
+            result[key] = { x: inset, y: rowY, width: fullWidth, height: cardHeight }
             rowY += cardHeight + gap
           } else if (halfUsed) {
-            result[key] = { x: halfWidth + gap, y: rowY, width: halfWidth, height: 74 }
-            rowY += 74 + gap
+            result[key] = { x: inset + halfWidth + gap, y: rowY, width: halfWidth, height: tileHeight }
+            rowY += tileHeight + gap
             halfUsed = false
           } else {
             var nextKey = i + 1 < layout.visibleControlKeys.length ? layout.visibleControlKeys[i + 1] : ""
             var nextIsSmall = nextKey !== "" && !layout.controls.controlWide(nextKey)
-            result[key] = { x: 0, y: rowY, width: nextIsSmall ? halfWidth : width, height: 74 }
+            result[key] = { x: inset, y: rowY, width: nextIsSmall ? halfWidth : fullWidth, height: tileHeight }
             if (nextIsSmall) halfUsed = true
-            else rowY += 74 + gap
+            else rowY += tileHeight + gap
           }
         }
-        result.height = Math.max(0, rowY + (halfUsed ? 74 : -gap))
+        result.height = Math.max(0, rowY + (halfUsed ? tileHeight : rowY > inset ? -gap : 0) + inset)
         return result
       }
       Repeater {
@@ -198,13 +207,26 @@ ColumnLayout {
           y: slot ? slot.y : 0
           width: slot ? slot.width : 0
           height: slot ? slot.height : 0
-          opacity: layout.draggedKey === modelData ? 0.25 : 1
+          readonly property bool dragged: layout.draggedKey === modelData
+          readonly property real cornerRadius: layout.controls.controlWide(modelData) ? layout.center.cardRadius : height / 2
           Behavior on x { enabled: layout.center.editMode; MotionAnimation { theme: layout.center.host.theme; pace: "standard" } }
           Behavior on y { enabled: layout.center.editMode; MotionAnimation { theme: layout.center.host.theme; pace: "standard" } }
-          Behavior on opacity { MotionAnimation { theme: layout.center.host.theme; pace: "fade"; curve: "fade" } }
 
+          // While it's dragged, an empty slot holds its place.
+          Rectangle {
+            anchors.fill: parent
+            radius: controlCard.cornerRadius
+            color: layout.center.host.theme.withAlpha(layout.center.text, 0.03)
+            border.width: 1.5
+            border.color: layout.center.host.theme.withAlpha(layout.center.text, 0.18)
+            opacity: controlCard.dragged ? 1 : 0
+            visible: opacity > 0
+            Behavior on opacity { MotionAnimation { theme: layout.center.host.theme; pace: "fade"; curve: "fade" } }
+          }
           Loader {
             anchors.fill: parent
+            opacity: controlCard.dragged ? 0 : 1
+            Behavior on opacity { MotionAnimation { theme: layout.center.host.theme; pace: "fade"; curve: "fade" } }
             property var center: layout.center
             property string controlKey: controlCard.modelData
             property bool galleryPreview: false
@@ -234,22 +256,12 @@ ColumnLayout {
             }
             onCanceled: layout.endDrag()
           }
-          Rectangle {
-            visible: layout.center.editMode
-            anchors.left: parent.left
-            anchors.top: parent.top
-            anchors.leftMargin: 0
-            anchors.topMargin: 0
-            z: 2
-            width: 22; height: 22; radius: 11
-            color: Qt.tint(layout.center.wellHover, layout.center.host.theme.withAlpha(layout.center.text, 0.12))
-            Rectangle { anchors.centerIn: parent; width: 10; height: 2; radius: 1; color: layout.center.host.theme.background }
-            Tooltip { theme: layout.center.host.theme; text: "Remove" }
-            MouseArea {
-              anchors.fill: parent
-              cursorShape: Qt.PointingHandCursor
-              onClicked: { layout.controls.setShown(controlCard.modelData, false); layout.endDrag() }
-            }
+          CcEditBadge {
+            center: layout.center
+            shown: layout.center.editMode && !controlCard.dragged
+            cornerRadius: controlCard.cornerRadius
+            tip: "Remove"
+            onClicked: { layout.controls.setShown(controlCard.modelData, false); layout.endDrag() }
           }
         }
       }
@@ -259,7 +271,7 @@ ColumnLayout {
   Rectangle {
     visible: !layout.center.editMode && layout.visibleControlKeys.length === 0
     Layout.fillWidth: true
-    Layout.preferredHeight: 74
+    Layout.preferredHeight: layout.center.tileHeight
     radius: height / 2
     color: layout.center.card
     border.width: 1
@@ -297,8 +309,14 @@ ColumnLayout {
       visible: layout.draggedKey !== ""
       radius: layout.draggedKey !== "" && layout.controls.controlWide(layout.draggedKey) ? layout.center.cardRadius : height / 2
       color: layout.center.card
-      opacity: 0.96
-      scale: 1.04
+      scale: 1.05
+      layer.enabled: visible
+      layer.effect: MultiEffect {
+        shadowEnabled: true
+        shadowColor: Qt.rgba(0, 0, 0, 0.6)
+        shadowBlur: 0.8
+        shadowVerticalOffset: 6
+      }
       Loader {
         anchors.fill: parent
         enabled: false

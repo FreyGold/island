@@ -32,11 +32,10 @@ CcTile {
     : calendar.spanText(next)
   onClicked: calendar.host.view = "calendar"
 
-  // Over the badge (44 wide, centred on the capsule's end), left without an
-  // icon.
-  readonly property real badgeLeft: (height - 44) / 2
+  // Over the badge (centred on the capsule's end), left without an icon.
+  readonly property real badgeLeft: (height - badgeSize) / 2
   Column {
-    x: tile.badgeLeft + (44 - width) / 2
+    x: tile.badgeLeft + (tile.badgeSize - width) / 2
     anchors.verticalCenter: parent.verticalCenter
     anchors.verticalCenterOffset: 1
     spacing: -5
@@ -54,7 +53,7 @@ CcTile {
       text: tile.calendar.today.getDate()
       color: tile.checked ? tile.center.badgeOnInk : tile.center.text
       font.family: tile.center.host.theme.textFontFamily
-      font.pixelSize: tile.center.host.theme.px(19)
+      font.pixelSize: tile.center.host.theme.px(17)
       font.weight: Font.Normal
       font.features: { "tnum": 1 }
     }
@@ -62,8 +61,8 @@ CcTile {
   // The next event's calendar, on the badge's edge.
   Rectangle {
     visible: !!tile.next
-    x: tile.badgeLeft + 44 - width + 1
-    y: (tile.height + 44) / 2 - height + 1
+    x: tile.badgeLeft + tile.badgeSize - width + 1
+    y: (tile.height + tile.badgeSize) / 2 - height + 1
     width: 13
     height: 13
     radius: width / 2

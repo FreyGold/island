@@ -29,45 +29,13 @@ CcSection {
   // Output picker, revealed by the › button.
   Repeater {
     model: !galleryPreview && card.center.outputsOpen && !card.center.editMode ? card.controls.outputs : []
-    delegate: Rectangle {
-      id: outputRow
+    delegate: CcDeviceRow {
       required property var modelData
-      readonly property bool isDefault: modelData === card.controls.sink
-      Layout.fillWidth: true
-      Layout.preferredHeight: 32
-      radius: 7
-      color: outputMouse.containsMouse ? card.center.host.theme.withAlpha(card.center.text, 0.08) : "transparent"
-      Text {
-        anchors.left: parent.left
-        anchors.leftMargin: 10
-        anchors.right: outputCheck.left
-        anchors.rightMargin: 8
-        anchors.verticalCenter: parent.verticalCenter
-        text: String(outputRow.modelData.description || outputRow.modelData.nickname || outputRow.modelData.name || "")
-        textFormat: Text.PlainText
-        elide: Text.ElideRight
-        color: outputRow.isDefault ? card.center.text : card.center.textMuted
-        font.family: card.center.host.theme.textFontFamily
-        font.pixelSize: card.center.host.theme.px(12)
-      }
-      Text {
-        id: outputCheck
-        anchors.right: parent.right
-        anchors.rightMargin: 10
-        anchors.verticalCenter: parent.verticalCenter
-        visible: outputRow.isDefault
-        text: "󰄬"
-        color: card.center.accent
-        font.family: card.center.iconFont
-        font.pixelSize: card.center.host.theme.px(14)
-      }
-      MouseArea {
-        id: outputMouse
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onClicked: Pipewire.preferredDefaultAudioSink = outputRow.modelData
-      }
+      center: card.center
+      device: modelData
+      selected: modelData === card.controls.sink
+      icon: "󰓃"
+      onPicked: Pipewire.preferredDefaultAudioSink = modelData
     }
   }
   Text {

@@ -17,7 +17,7 @@ Rectangle {
   default property alias content: body.data
 
   Layout.fillWidth: true
-  Layout.preferredHeight: body.implicitHeight + 54
+  Layout.preferredHeight: body.implicitHeight + 52
   radius: center.cardRadius
   color: center.card
   border.width: 1
@@ -25,25 +25,26 @@ Rectangle {
 
   Text {
     anchors.left: parent.left
-    anchors.leftMargin: 18
+    anchors.leftMargin: 16
     anchors.top: parent.top
-    anchors.topMargin: 14
+    anchors.topMargin: 13
     text: sec.title
     color: center.text
     font.family: center.host.theme.textFontFamily
-    font.pixelSize: center.host.theme.px(14)
+    font.pixelSize: center.host.theme.px(13)
     font.weight: Font.DemiBold
-    font.letterSpacing: -0.2
+    font.letterSpacing: -0.1
   }
   Text {
     anchors.right: parent.right
-    anchors.rightMargin: sec.showChevron ? 46 : 18
+    anchors.rightMargin: sec.showChevron ? 44 : 16
     anchors.top: parent.top
-    anchors.topMargin: 15
+    anchors.topMargin: 14
     text: sec.detail
     color: center.textMuted
     font.family: center.host.theme.textFontFamily
-    font.pixelSize: center.host.theme.px(12)
+    font.pixelSize: center.host.theme.px(11)
+    font.features: { "tnum": 1 }
   }
   Rectangle {
     id: chevron
@@ -51,8 +52,8 @@ Rectangle {
     anchors.right: parent.right
     anchors.rightMargin: 14
     anchors.top: parent.top
-    anchors.topMargin: 10
-    width: 24; height: 24; radius: 12
+    anchors.topMargin: 9
+    width: 22; height: 22; radius: 11
     color: chevronMouse.containsMouse ? center.wellHover : center.well
     Tooltip { theme: center.host.theme; text: sec.chevronOpen ? sec.chevronHideLabel : sec.chevronLabel }
     Text {
@@ -61,7 +62,7 @@ Rectangle {
       rotation: sec.chevronOpen ? 90 : 0
       color: center.textMuted
       font.family: center.iconFont
-      font.pixelSize: center.host.theme.px(15)
+      font.pixelSize: center.host.theme.px(14)
       Behavior on rotation { MotionAnimation { theme: center.host.theme; pace: "standard" } }
     }
     MouseArea { id: chevronMouse; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: sec.chevronClicked() }
@@ -71,9 +72,9 @@ Rectangle {
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: parent.top
-    anchors.topMargin: 42
-    anchors.leftMargin: 16
-    anchors.rightMargin: 18
+    anchors.topMargin: 38
+    anchors.leftMargin: 14
+    anchors.rightMargin: 14
     spacing: 6
   }
 }

@@ -17,12 +17,15 @@ Rectangle {
   property bool clickable: true
   // When set, the badge toggles and the rest of the tile opens details.
   property bool opens: false
+  // The round icon badge's size; addon tiles that draw their own badge
+  // (Calendar) line up with it.
+  readonly property real badgeSize: 38
   signal clicked()
   signal opened()
 
   Layout.fillWidth: true
   Layout.preferredWidth: 1
-  Layout.preferredHeight: 72
+  Layout.preferredHeight: center.tileHeight
   radius: height / 2
   color: tileMouse.containsMouse ? center.tile : center.card
   border.width: 1
@@ -38,7 +41,7 @@ Rectangle {
     anchors.left: parent.left
     anchors.leftMargin: (t.height - height) / 2
     anchors.verticalCenter: parent.verticalCenter
-    width: 44; height: 44; radius: 22
+    width: t.badgeSize; height: t.badgeSize; radius: t.badgeSize / 2
     color: t.checked ? center.accent : center.well
     Behavior on color { MotionColorAnimation { theme: center.host.theme } }
     Text {
@@ -47,14 +50,14 @@ Rectangle {
       color: t.checked ? center.badgeOnInk : center.text
       Behavior on color { MotionColorAnimation { theme: center.host.theme } }
       font.family: center.iconFont
-      font.pixelSize: center.host.theme.px(20)
+      font.pixelSize: center.host.theme.px(18)
     }
   }
   Column {
     anchors.left: badge.right
-    anchors.leftMargin: 10
+    anchors.leftMargin: 9
     anchors.right: parent.right
-    anchors.rightMargin: 18
+    anchors.rightMargin: 16
     anchors.verticalCenter: parent.verticalCenter
     spacing: 1
     Text {
@@ -63,9 +66,9 @@ Rectangle {
       elide: Text.ElideRight
       color: center.text
       font.family: center.host.theme.textFontFamily
-      font.pixelSize: center.host.theme.px(14)
+      font.pixelSize: center.host.theme.px(13)
       font.weight: Font.DemiBold
-      font.letterSpacing: -0.2
+      font.letterSpacing: -0.1
     }
     Text {
       width: parent.width
@@ -75,7 +78,7 @@ Rectangle {
       elide: Text.ElideRight
       color: center.textMuted
       font.family: center.host.theme.textFontFamily
-      font.pixelSize: center.host.theme.px(12)
+      font.pixelSize: center.host.theme.px(11)
     }
   }
   MouseArea {

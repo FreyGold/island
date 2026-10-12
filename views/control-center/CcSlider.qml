@@ -22,14 +22,14 @@ Item {
   }
 
   Layout.fillWidth: true
-  Layout.preferredHeight: 38
+  Layout.preferredHeight: 30
 
   Item {
     id: track
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.verticalCenter: parent.verticalCenter
-    height: 34
+    height: 26
     Rectangle {
       anchors.fill: parent
       radius: height / 2
@@ -56,20 +56,20 @@ Item {
       layer.enabled: true
       layer.effect: MultiEffect {
         shadowEnabled: true
-        shadowColor: Qt.rgba(0, 0, 0, 0.45)
-        shadowBlur: 0.35
+        shadowColor: Qt.rgba(0, 0, 0, 0.5)
+        shadowBlur: 0.3
         shadowHorizontalOffset: -0.5
         shadowVerticalOffset: 0.5
       }
     }
     Text {
       anchors.left: parent.left
-      anchors.leftMargin: 11
+      anchors.leftMargin: 7
       anchors.verticalCenter: parent.verticalCenter
       text: s.icon
       color: sliderFill.width > x + width ? "#5c5c60" : center.textMuted
       font.family: center.iconFont
-      font.pixelSize: center.host.theme.px(18)
+      font.pixelSize: center.host.theme.px(15)
     }
   }
   MouseArea {

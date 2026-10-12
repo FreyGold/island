@@ -18,14 +18,19 @@ ColumnLayout {
   readonly property color textMuted: Qt.tint(host.theme.background, host.theme.withAlpha(text, 0.6))
   readonly property color tile: Qt.tint(host.theme.background, host.theme.withAlpha(text, 0.11))
   readonly property color card: Qt.tint(host.theme.background, host.theme.withAlpha(text, 0.075))
-  readonly property color edge: host.theme.withAlpha(text, 0.05)
+  readonly property color edge: host.theme.withAlpha(text, 0.08)
   readonly property color well: Qt.tint(host.theme.background, host.theme.withAlpha(text, 0.16))
   readonly property color wellHover: Qt.tint(host.theme.background, host.theme.withAlpha(text, 0.22))
   readonly property string iconFont: host.theme.fontFamily
   // macOS shapes: switches are capsules, cards concentric with the island.
-  readonly property real cardRadius: 24
-  // The icon on a switched-on (accent) badge: a deep shade of the accent.
-  readonly property color badgeOnInk: Qt.hsla(accent.hslHue, accent.hslSaturation, 0.16, 1)
+  readonly property real cardRadius: 22
+  // macOS's module sizes: a tile, a slider card, and the gap between them.
+  readonly property real tileHeight: 64
+  readonly property real sectionHeight: 86
+  readonly property real gap: 8
+  // The icon on a switched-on (accent) badge: white, as macOS's on blue,
+  // or a deep shade of the accent when it's too light for white.
+  readonly property color badgeOnInk: accent.hslLightness < 0.62 ? "#ffffff" : Qt.hsla(accent.hslHue, accent.hslSaturation, 0.16, 1)
   property bool editMode: false
   property bool outputsOpen: false
   property bool inputsOpen: false
@@ -48,7 +53,7 @@ ColumnLayout {
     return quickCard
   }
 
-  spacing: 10
+  spacing: cc.gap
 
   // Esc leaves edit mode, then closes the control center.
   Keys.onEscapePressed: {
@@ -60,21 +65,24 @@ ColumnLayout {
 
   RowLayout {
     Layout.fillWidth: true
-    Layout.preferredHeight: 34
-    Layout.leftMargin: 4
-    Layout.rightMargin: 4
+    Layout.preferredHeight: 30
+    Layout.leftMargin: 6
+    Layout.rightMargin: 2
+    spacing: 6
+    // Today's date as the title ("Wed, Oct 21"); Edit Controls while editing.
     Text {
-      text: "Control Center"
+      text: cc.editMode ? "Edit Controls" : Qt.locale("en_US").toString(cc.host.clockDate, "ddd, MMM d")
       color: cc.text
       font.family: cc.host.theme.textFontFamily
-      font.pixelSize: cc.host.theme.px(17)
+      font.pixelSize: cc.host.theme.px(15)
       font.weight: Font.DemiBold
+      font.letterSpacing: -0.2
     }
     Item { Layout.fillWidth: true }
     Rectangle {
-      Layout.preferredWidth: cc.editMode ? 64 : 32
-      Layout.preferredHeight: 32
-      radius: 16
+      Layout.preferredWidth: cc.editMode ? 58 : 28
+      Layout.preferredHeight: 28
+      radius: 14
       color: editMouse.containsMouse || cc.editMode ? cc.well : cc.card
       Tooltip { theme: cc.host.theme; text: cc.editMode ? "" : "Edit Controls" }
       Text {
@@ -82,7 +90,7 @@ ColumnLayout {
         text: cc.editMode ? "Done" : "󰏫"
         color: cc.text
         font.family: cc.editMode ? cc.host.theme.textFontFamily : cc.iconFont
-        font.pixelSize: cc.editMode ? cc.host.theme.px(12) : cc.host.theme.px(17)
+        font.pixelSize: cc.editMode ? cc.host.theme.px(12) : cc.host.theme.px(15)
         font.weight: Font.DemiBold
       }
       MouseArea {
@@ -94,9 +102,9 @@ ColumnLayout {
       }
     }
     Rectangle {
-      Layout.preferredWidth: 32
-      Layout.preferredHeight: 32
-      radius: 16
+      Layout.preferredWidth: 28
+      Layout.preferredHeight: 28
+      radius: 14
       color: settingsMouse.containsMouse ? cc.well : cc.card
       Tooltip { theme: cc.host.theme; text: "Island Settings" }
       Text {
@@ -104,7 +112,7 @@ ColumnLayout {
         text: "󰒓"
         color: cc.text
         font.family: cc.iconFont
-        font.pixelSize: cc.host.theme.px(17)
+        font.pixelSize: cc.host.theme.px(15)
       }
       MouseArea {
         id: settingsMouse

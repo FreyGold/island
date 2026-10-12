@@ -23,26 +23,42 @@ ColumnLayout {
       text: "Notifications"
       color: history.center.text
       font.family: history.center.host.theme.textFontFamily
-      font.pixelSize: history.center.host.theme.px(15)
+      font.pixelSize: history.center.host.theme.px(14)
       font.weight: Font.DemiBold
-      font.letterSpacing: -0.2
+      font.letterSpacing: -0.1
     }
     Item { Layout.fillWidth: true }
+    // macOS's round ×, widening into "Clear All" while hovered.
     Rectangle {
       visible: !history.empty
-      implicitWidth: clearLabel.implicitWidth + 22
-      implicitHeight: 24
+      implicitWidth: clearMouse.containsMouse ? clearLabel.implicitWidth + 20 : 22
+      implicitHeight: 22
       radius: height / 2
+      clip: true
       color: clearMouse.containsMouse ? history.center.wellHover : history.center.card
+      border.width: 1
+      border.color: history.center.edge
       Behavior on color { MotionColorAnimation { theme: history.center.host.theme } }
+      Behavior on implicitWidth { MotionAnimation { theme: history.center.host.theme; pace: "quick" } }
+      Text {
+        anchors.centerIn: parent
+        opacity: clearMouse.containsMouse ? 0 : 1
+        text: "󰅖"
+        color: history.center.textMuted
+        font.family: history.center.iconFont
+        font.pixelSize: history.center.host.theme.px(12)
+        Behavior on opacity { MotionAnimation { theme: history.center.host.theme; pace: "fade"; curve: "fade" } }
+      }
       Text {
         id: clearLabel
         anchors.centerIn: parent
+        opacity: clearMouse.containsMouse ? 1 : 0
         text: "Clear All"
         color: history.center.text
         font.family: history.center.host.theme.textFontFamily
-        font.pixelSize: history.center.host.theme.px(12)
+        font.pixelSize: history.center.host.theme.px(11)
         font.weight: Font.Medium
+        Behavior on opacity { MotionAnimation { theme: history.center.host.theme; pace: "fade"; curve: "fade" } }
       }
       MouseArea {
         id: clearMouse
@@ -73,7 +89,7 @@ ColumnLayout {
     Layout.leftMargin: -6
     Layout.preferredHeight: Math.min(contentHeight, 320)
     clip: true
-    spacing: 2
+    spacing: 4
     boundsBehavior: Flickable.StopAtBounds
     model: history.center.host.notifications.history
     // Inset by the × button's overhang, which sits on the banner's corner.
@@ -89,8 +105,8 @@ ColumnLayout {
         x: 6
         y: 6
         width: parent.width - 6
-        height: Math.max(noteBody.implicitHeight, 40) + 26
-        radius: 20
+        height: Math.max(noteBody.implicitHeight, 36) + 24
+        radius: 18
         color: note.hovered ? history.center.tile : history.center.card
         border.width: 1
         border.color: history.center.edge
@@ -113,10 +129,10 @@ ColumnLayout {
           readonly property string source: history.center.host.notifications.iconSource(note.modelData, imageFailed)
           readonly property var brand: history.center.host.notifications.brand(note.modelData)
           anchors.left: parent.left
-          anchors.leftMargin: 13
+          anchors.leftMargin: 12
           anchors.top: parent.top
-          anchors.topMargin: 13
-          width: 40; height: 40; radius: 10
+          anchors.topMargin: 12
+          width: 36; height: 36; radius: 9
           color: brand ? brand.tile
             : noteIcon.status === Image.Ready ? "transparent" : history.center.host.theme.withAlpha(history.center.accent, 0.18)
           Image {
@@ -136,19 +152,19 @@ ColumnLayout {
             text: avatar.brand ? avatar.brand.glyph : note.appName.charAt(0).toUpperCase()
             color: avatar.brand ? avatar.brand.ink : history.center.accent
             font.family: avatar.brand ? "JetBrainsMono Nerd Font" : history.center.host.theme.textFontFamily
-            font.pixelSize: avatar.brand ? history.center.host.theme.px(22) : history.center.host.theme.px(17)
+            font.pixelSize: avatar.brand ? history.center.host.theme.px(20) : history.center.host.theme.px(16)
             font.weight: Font.DemiBold
           }
         }
         Column {
           id: noteBody
           anchors.left: avatar.right
-          anchors.leftMargin: 11
+          anchors.leftMargin: 10
           anchors.right: parent.right
-          anchors.rightMargin: 16
+          anchors.rightMargin: 14
           anchors.top: parent.top
-          anchors.topMargin: 13
-          spacing: 2
+          anchors.topMargin: 12
+          spacing: 1
           // Like macOS's Notification Center: the title with the time on
           // the same line (the icon already says which app).
           Item {
@@ -166,7 +182,7 @@ ColumnLayout {
               font.family: history.center.host.theme.textFontFamily
               font.pixelSize: history.center.host.theme.px(13)
               font.weight: Font.DemiBold
-              font.letterSpacing: -0.2
+              font.letterSpacing: -0.1
             }
             Text {
               id: noteAge
@@ -176,7 +192,7 @@ ColumnLayout {
               textFormat: Text.PlainText
               color: history.center.textMuted
               font.family: history.center.host.theme.textFontFamily
-              font.pixelSize: history.center.host.theme.px(12)
+              font.pixelSize: history.center.host.theme.px(11)
             }
           }
           Text {
@@ -190,7 +206,7 @@ ColumnLayout {
             lineHeight: 1.08
             color: history.center.host.theme.withAlpha(history.center.text, 0.78)
             font.family: history.center.host.theme.textFontFamily
-            font.pixelSize: history.center.host.theme.px(13)
+            font.pixelSize: history.center.host.theme.px(12)
           }
         }
       }

@@ -30,45 +30,13 @@ CcSection {
   }
   Repeater {
     model: !galleryPreview && card.center.inputsOpen && !card.center.editMode ? card.controls.inputs : []
-    delegate: Rectangle {
-      id: inputRow
+    delegate: CcDeviceRow {
       required property var modelData
-      readonly property bool isDefault: modelData === card.controls.microphoneSource
-      Layout.fillWidth: true
-      Layout.preferredHeight: 32
-      radius: 7
-      color: inputMouse.containsMouse ? card.center.host.theme.withAlpha(card.center.text, 0.08) : "transparent"
-      Text {
-        anchors.left: parent.left
-        anchors.leftMargin: 10
-        anchors.right: inputCheck.left
-        anchors.rightMargin: 8
-        anchors.verticalCenter: parent.verticalCenter
-        text: String(inputRow.modelData.description || inputRow.modelData.nickname || inputRow.modelData.name || "")
-        textFormat: Text.PlainText
-        elide: Text.ElideRight
-        color: inputRow.isDefault ? card.center.text : card.center.textMuted
-        font.family: center.host.theme.textFontFamily
-        font.pixelSize: center.host.theme.px(12)
-      }
-      Text {
-        id: inputCheck
-        anchors.right: parent.right
-        anchors.rightMargin: 10
-        anchors.verticalCenter: parent.verticalCenter
-        visible: inputRow.isDefault
-        text: "󰄬"
-        color: card.center.accent
-        font.family: card.center.iconFont
-        font.pixelSize: center.host.theme.px(14)
-      }
-      MouseArea {
-        id: inputMouse
-        anchors.fill: parent
-        hoverEnabled: true
-        cursorShape: Qt.PointingHandCursor
-        onClicked: Pipewire.preferredDefaultAudioSource = inputRow.modelData
-      }
+      center: card.center
+      device: modelData
+      selected: modelData === card.controls.microphoneSource
+      icon: "󰍬"
+      onPicked: Pipewire.preferredDefaultAudioSource = modelData
     }
   }
 }
