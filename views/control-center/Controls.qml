@@ -9,7 +9,8 @@ import Quickshell.Services.UPower
 
 // What the control center's controls show and do: network, sound,
 // microphone, Bluetooth, battery and power profile, keyboard layout, Focus,
-// Night Shift, Game Mode, Stay Awake, Screensaver, Screenshot and brightness, plus which controls are shown and in
+// Night Shift, Game Mode, Stay Awake, Screensaver, Screenshot, Screen Recording
+// and brightness, plus which controls are shown and in
 // what order (saved in the island's settings), enabled addons' tiles among
 // them (see addons/Addon.qml). Nothing here is drawn.
 Item {
@@ -19,7 +20,7 @@ Item {
 
   // --- Which controls, in what order ---
 
-  readonly property var known: ["wifi", "bluetooth", "focus", "game", "night", "power", "keyboard", "sound", "microphone", "microphoneMute", "awake", "screensaver", "screenshot", "display"]
+  readonly property var known: ["wifi", "bluetooth", "focus", "game", "night", "power", "keyboard", "sound", "microphone", "microphoneMute", "awake", "screensaver", "screenshot", "screenrecord", "display"]
     .concat(host.addons.tiles.map(function(tile) { return tile.key }))
   readonly property var keys: {
     var known = controls.known
@@ -42,12 +43,12 @@ Item {
   function title(key) {
     var tile = host.addons.tileFor(key)
     if (tile) return String(tile.title || key)
-    var names = { wifi: "Wi-Fi / Ethernet", bluetooth: "Bluetooth", focus: "Focus", game: "Game Mode", night: "Night Shift", power: "Power Mode", keyboard: "Keyboard", awake: "Stay Awake", screensaver: "Screensaver", screenshot: "Screenshot", sound: "Sound", microphone: "Microphone", microphoneMute: "Microphone", display: "Display" }
+    var names = { wifi: "Wi-Fi / Ethernet", bluetooth: "Bluetooth", focus: "Focus", game: "Game Mode", night: "Night Shift", power: "Power Mode", keyboard: "Keyboard", awake: "Stay Awake", screensaver: "Screensaver", screenshot: "Screenshot", screenrecord: "Screen Recording", sound: "Sound", microphone: "Microphone", microphoneMute: "Microphone", display: "Display" }
     return names[key] || key
   }
   // Controls that stay out of the layout until added from the gallery, even
   // for settings saved before they existed.
-  readonly property var optIn: ({ microphoneMute: "microphoneMuteControl", awake: "stayAwakeControl", screensaver: "screensaverControl", screenshot: "screenshotControl" })
+  readonly property var optIn: ({ microphoneMute: "microphoneMuteControl", awake: "stayAwakeControl", screensaver: "screensaverControl", screenshot: "screenshotControl", screenrecord: "screenRecordControl" })
   function isShown(key) {
     if (optIn[key] && !settings[optIn[key]]) return false
     return String(settings.controlCenterHidden || "").split(",").indexOf(key) === -1
@@ -198,6 +199,7 @@ Item {
     if (key === "awake") return stayAwake ? "󰅶" : "󰛊"
     if (key === "screensaver") return screensaverOn ? "󱄄" : "󰶐"
     if (key === "screenshot") return "󰹑"
+    if (key === "screenrecord") return "󰻃"
     if (key === "power") return profileIcons[profileName] || "󰾅"
     if (key === "keyboard") return "󰌌"
     return "󰖔"
@@ -214,6 +216,7 @@ Item {
     if (key === "awake") return stayAwake ? "On" : "Off"
     if (key === "screensaver") return screensaverOn ? "On" : "Off"
     if (key === "screenshot") return "Region or window"
+    if (key === "screenrecord") return recorder.recording ? recorder.timeText(recorder.elapsed) : recorder.active ? "Saving…" : "Off"
     if (key === "power") return profileLabels[profileName] || "Balanced"
     if (key === "keyboard") return keyboardLabel
     return nightOn ? "On" : "Off"
@@ -226,6 +229,7 @@ Item {
     if (key === "game") return gameMode
     if (key === "awake") return stayAwake
     if (key === "screensaver") return screensaverOn
+    if (key === "screenrecord") return recorder.active
     if (key === "power") return profileName !== "balanced"
     if (key === "keyboard" || key === "screenshot") return false
     return nightOn
@@ -248,6 +252,7 @@ Item {
     else if (key === "awake" && idle) idle.setIdleEnabled(stayAwake)
     else if (key === "screensaver") setScreensaver(!screensaverOn)
     else if (key === "screenshot") takeScreenshot()
+    else if (key === "screenrecord") toggleRecording()
     else if (key === "power") cycleProfile()
     else if (key === "keyboard") nextKeyboardLayout()
     else if (key === "night" && nightlight) nightlight.setNightlight(!nightOn)
@@ -295,6 +300,17 @@ Item {
   function takeScreenshot() {
     host.view = "rest"
     screenshotDelay.restart()
+  }
+
+  // --- Screen recording: stops one, or opens Omarchy's recording options
+  // (audio, webcam) in the island's menu, as Alt+Print does ---
+  readonly property var recorder: host.recorder
+  function toggleRecording() {
+    if (recorder.recording) recorder.stop()
+    else if (!recorder.active) {
+      host.menuRoute = "trigger.capture.screenrecord"
+      host.view = "menu"
+    }
   }
 
   // --- Brightness (the Display card hides when the output has no control) ---

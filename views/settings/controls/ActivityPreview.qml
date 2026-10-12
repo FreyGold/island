@@ -13,6 +13,7 @@ Item {
   readonly property bool colorfulActivities: !!view.settings.colorfulLiveActivities
   readonly property bool transfer: kind === "downloads" || kind === "updates"
   readonly property color positiveColor: colorfulActivities ? "#30d158" : accent
+  readonly property color recordingColor: colorfulActivities ? "#ff453a" : accent
   // Each kind's sample: the leading glyph (in glyphColor, accent by default),
   // the label after it, and the status trailing (in statusColor). Kinds with
   // their own layout (bluetooth, media, workspace, volume) draw the rest below.
@@ -24,7 +25,8 @@ Item {
     downloads: { glyph: "󰁅", glyphColor: positiveColor, label: "12:34", status: "2 MB/s", statusColor: positiveColor },
     updates: { glyph: "󰏗", glyphColor: positiveColor, label: "12:34", status: "Updating", statusColor: positiveColor },
     network: { glyph: "󰤨", label: "Home", status: "Connected", statusColor: accent },
-    battery: { label: "Charging", status: "64%", statusColor: positiveColor }
+    battery: { label: "Charging", status: "64%", statusColor: positiveColor },
+    recording: { label: "12:34", status: "01:23", statusColor: recordingColor }
   })[kind] || ({})
   readonly property string glyph: sample.glyph || ""
 
@@ -104,6 +106,13 @@ Item {
         font.family: preview.iconFont
         font.pixelSize: preview.kind === "bluetooth" ? preview.view.host.theme.px(27) : preview.transfer ? preview.view.host.theme.px(13) : preview.view.host.theme.px(17)
       }
+    }
+    Rectangle {
+      x: 17
+      anchors.verticalCenter: parent.verticalCenter
+      visible: preview.kind === "recording"
+      width: 10; height: 10; radius: 5
+      color: preview.recordingColor
     }
     BatteryIcon {
       x: 12

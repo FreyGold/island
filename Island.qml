@@ -24,15 +24,20 @@ Item {
 
   readonly property var nowPlaying: nowPlayingData
   NowPlaying { id: nowPlayingData; shell: root.shell; theme: root.theme }
-  readonly property bool mediaPill: view === "rest" && nowPlaying.playing && !setup.needsSetup && settings.mediaPill && !downloadPill && !addons.ongoing
+  readonly property bool mediaPill: view === "rest" && nowPlaying.playing && !setup.needsSetup && settings.mediaPill && !downloadPill && !addons.ongoing && !recordingPill
+
+  // A screen recording holds the resting island over every other pill.
+  readonly property var recorder: screenRecorder
+  ScreenRecorder { id: screenRecorder }
+  readonly property bool recordingPill: view === "rest" && !setup.needsSetup && settings.screenRecordingActivity && recorder.active
 
   readonly property var downloads: downloadTracker
   DownloadTracker { id: downloadTracker; enabled: root.settings.downloads }
   readonly property var packages: packageTracker
   PackageUpdateTracker { id: packageTracker; enabled: root.settings.systemUpdates }
-  readonly property bool downloadDone: view === "rest" && !setup.needsSetup && !addons.ongoing
+  readonly property bool downloadDone: view === "rest" && !setup.needsSetup && !addons.ongoing && !recordingPill
     && (downloads.finishedName !== "" || packages.finishedTitle !== "")
-  readonly property bool downloadActive: view === "rest" && !setup.needsSetup && !addons.ongoing
+  readonly property bool downloadActive: view === "rest" && !setup.needsSetup && !addons.ongoing && !recordingPill
     && (downloads.active || packages.active) && !downloadDone
   readonly property bool downloadPill: downloadDone || downloadActive
   Process { id: downloadOpener }
@@ -87,7 +92,7 @@ Item {
   // The addon whose pill is on the island, if any (see addons/Addon.qml):
   // the one shown for a moment, or at rest an ongoing one's.
   readonly property var addonPill: view === "feedback" ? addons.pillFor(feedbackKind)
-    : view === "rest" && !setup.needsSetup ? addons.ongoing : null
+    : view === "rest" && !setup.needsSetup && !recordingPill ? addons.ongoing : null
 
   // ---------- Workspace switches ----------
 
@@ -476,6 +481,7 @@ Item {
             : root.activityPill && root.activities.current.kind === "bluetooth" ? 360
             : root.clipboardPill || root.activityPill ? 320
             : root.workspacesPill ? root.workspaceIds.length * 24 + 42
+            : root.recordingPill ? 240
             : root.addonPill ? root.addonPill.pillWidth
             : root.view === "feedback" ? 280
             : root.setup.needsSetup ? (root.setup.warning.length > 24 ? 320 : 250)
@@ -490,7 +496,7 @@ Item {
             : root.addonPill ? root.addonPill.pillHeight
             : root.workspacesPill ? (root.settings.notch ? 36 : 40)
             : root.downloadDone ? 64
-            : root.mediaPill || root.downloadPill ? (root.settings.notch ? 40 : 44)
+            : root.mediaPill || root.downloadPill || root.recordingPill ? (root.settings.notch ? 40 : 44)
             : root.volumePill ? (root.settings.notch ? 40 : 44)
             : root.osdPill ? (root.settings.notch ? 40 : 44)
             : root.view === "rest" ? (root.settings.notch ? 36 : 40) : 52
@@ -532,6 +538,7 @@ Item {
               else if (root.activityPill) root.view = root.activities.current.kind === "bluetooth" ? "bluetooth"
                 : root.activities.current.kind === "network" && !root.activities.current.wired ? "wifi" : "controls"
               else if (root.addonPill) root.addonPill.pillClicked()
+              else if (root.recordingPill) root.recorder.stop()
               else if (root.view === "rest" && root.setup.needsSetup) root.setup.pillClicked()
               else if (root.downloadDone || (root.downloadActive && (mouse.x < 56 || mouse.x > width - 90))) root.openDownloads()
               else if (root.mediaPill && (mouse.x < 56 || mouse.x > width - 72)) root.view = "player"
@@ -553,6 +560,8 @@ Item {
           WorkspacePill { host: root; anchors.fill: parent }
 
           AddonPills { host: root; anchors.fill: parent }
+
+          RecordingPill { host: root; anchors.fill: parent }
 
           MediaPill { host: root; anchors.fill: parent }
 

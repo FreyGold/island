@@ -32,6 +32,7 @@ Item {
       property bool notch: false
       property bool downloads: true
       property bool clipboard: true
+      property bool screenRecordingActivity: true
       property bool systemUpdates: true
       property bool batteryActivity: true
       property bool bluetoothActivity: true
@@ -49,6 +50,7 @@ Item {
       property bool stayAwakeControl: false
       property bool screensaverControl: false
       property bool screenshotControl: false
+      property bool screenRecordControl: false
       // Before Ask AI was an addon; carried over and cleared (see Addons.qml).
       property string askAi: ""
       // Addon id → enabled, and addon id → its options (see addons/Addons.qml).

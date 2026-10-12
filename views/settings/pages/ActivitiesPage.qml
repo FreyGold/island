@@ -16,6 +16,7 @@ ColumnLayout {
     { kind: "playback", key: "playbackOsd", title: "Play & Pause", description: "Show the track when playback pauses, resumes or skips" },
     { kind: "workspace", key: "workspaceHud", title: "Workspace Indicator", description: "Show which workspace is active" },
     { kind: "downloads", key: "downloads", title: "Downloads", description: "Show active download progress" },
+    { kind: "recording", key: "screenRecordingActivity", title: "Screen Recording", description: "Show the time recorded; click to stop" },
     { kind: "updates", key: "systemUpdates", title: "System Updates", description: "Show available system updates" },
     { kind: "bluetooth", key: "bluetoothActivity", title: "Bluetooth Devices", description: "Show Bluetooth connection status" },
     { kind: "network", key: "networkActivity", title: "Network", description: "Wi-Fi and Ethernet connection status" },
