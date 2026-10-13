@@ -2,7 +2,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
 
-// A stats card in the style of an iOS widget: a coloured icon and title
+// A widget card in the style of iOS: a coloured icon and title
 // with the reading's meaning in a tinted capsule, then a usage ring beside
 // a short list of figures.
 //   rows  [{ label, value, color }] (color optional, for a status word)

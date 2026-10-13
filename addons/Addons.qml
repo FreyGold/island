@@ -92,6 +92,20 @@ Item {
         }, []))
         .concat([{ rect: true, color: "#a9bcc2", x: 0.5, y: 0.69, width: 0.5, height: 0.09, radius: 0.4 }]),
       description: "Show the layout on the pill when it changes" },
+    { id: "agents", name: "Agents", icon: "󰚩", color: "#1c1c1e", default: false, source: "agents/AgentsAddon.qml",
+      // A week of usage: six faint bars and today's, under a limit meter.
+      iconLayers: [0.2, 0.32, 0.16, 0.4, 0.26, 0.36].map(function(h, i) {
+        return { rect: true, color: "#d97757", opacity: 0.45, x: 0.2 + i * 0.1, y: 0.82 - h / 2, width: 0.07, height: h, radius: 0.3 }
+      }).concat([
+        { rect: true, color: "#d97757", x: 0.8, y: 0.62, width: 0.07, height: 0.4, radius: 0.3 },
+        { rect: true, color: "#ffffff", opacity: 0.18, x: 0.5, y: 0.24, width: 0.7, height: 0.1, radius: 0.5 },
+        { rect: true, color: "#30d158", x: 0.36, y: 0.24, width: 0.42, height: 0.1, radius: 0.5 }
+      ]),
+      description: "Claude Code or Codex limits and tokens by day",
+      options: [
+        { key: "agent", label: "Agent", detail: "Usage read by Omarchy's agent collectors", type: "popup", default: "claude",
+          choices: [{ label: "Claude", value: "claude" }, { label: "Codex", value: "codex" }] }
+      ] },
     { id: "ask", name: "Ask AI", icon: "󰚩", color: "#000000", default: true, source: "ask/AskAddon.qml",
       // Siri's: a glass sphere on black, with a ribbon of light across it,
       // white in the middle and tinted orange and blue at its edges.

@@ -1,7 +1,7 @@
 import QtQuick
 
-// The surface every stats card sits on: an iOS widget's rounded panel, a
-// touch lighter at the top, with a hairline edge.
+// The surface the Settings widget cards (System Stats, Agents) sit on: an
+// iOS widget's rounded panel, a touch lighter at the top, with a hairline edge.
 Rectangle {
   required property var view
   radius: 20

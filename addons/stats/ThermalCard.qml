@@ -1,6 +1,7 @@
 pragma ComponentBehavior: Bound
 import QtQuick
 import QtQuick.Layouts
+import "../../components"
 
 // How hot the machine runs, as macOS puts it: one word for whichever part
 // runs hottest for its kind, the temperatures under it, and the scale.
