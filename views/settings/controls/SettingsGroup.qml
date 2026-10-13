@@ -10,10 +10,10 @@ ColumnLayout {
   property string footer: ""
   default property alias rows: groupBody.data
   Layout.fillWidth: true
-  spacing: 6
+  spacing: 7
   Text {
     visible: group.title !== ""
-    Layout.leftMargin: 2
+    Layout.leftMargin: 14
     text: group.title
     color: group.view.text
     font.family: group.view.host.theme.textFontFamily
@@ -23,10 +23,10 @@ ColumnLayout {
   Rectangle {
     Layout.fillWidth: true
     Layout.preferredHeight: groupBody.implicitHeight
-    radius: 10
+    radius: 12
     color: group.view.card
     border.width: 1
-    border.color: group.view.host.theme.withAlpha(group.view.text, 0.04)
+    border.color: group.view.edge
     ColumnLayout {
       id: groupBody
       anchors.left: parent.left
@@ -37,7 +37,8 @@ ColumnLayout {
   Text {
     visible: group.footer !== ""
     Layout.fillWidth: true
-    Layout.leftMargin: 2
+    Layout.leftMargin: 14
+    Layout.rightMargin: 14
     text: group.footer
     wrapMode: Text.WordWrap
     color: group.view.textMuted

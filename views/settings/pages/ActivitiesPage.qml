@@ -13,7 +13,7 @@ ColumnLayout {
 
   readonly property var activities: [
     { kind: "media", key: "mediaPill", title: "Now Playing", description: "Track details and album artwork" },
-    { kind: "playback", key: "playbackOsd", title: "Play & Pause", description: "Show the track when playback pauses, resumes or skips" },
+    { kind: "playback", key: "playbackOsd", title: "Play & Pause", description: "Show the track on pause, resume or skip" },
     { kind: "workspace", key: "workspaceHud", title: "Workspace Indicator", description: "Show which workspace is active" },
     { kind: "downloads", key: "downloads", title: "Downloads", description: "Show active download progress" },
     { kind: "recording", key: "screenRecordingActivity", title: "Screen Recording", description: "Show the time recorded; click to stop" },

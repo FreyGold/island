@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Effects
 import "../../../components"
 import QtQuick.Layouts
 
@@ -9,18 +10,23 @@ Rectangle {
   required property var view
   property bool checked: false
   signal toggled(bool checked)
-  implicitWidth: 34
-  implicitHeight: 20
-  radius: 10
+  implicitWidth: 32
+  implicitHeight: 18
+  radius: 9
   color: checked ? sw.view.accent : sw.view.well
   Behavior on color { MotionColorAnimation { theme: sw.view.host.theme } }
   Rectangle {
     width: 16; height: 16; radius: 8
-    y: 2
-    x: sw.checked ? sw.width - width - 2 : 2
+    y: 1
+    x: sw.checked ? sw.width - width - 1 : 1
     color: "#ffffff"
-    border.width: 1
-    border.color: Qt.rgba(0, 0, 0, 0.12)
+    layer.enabled: true
+    layer.effect: MultiEffect {
+      shadowEnabled: true
+      shadowColor: Qt.rgba(0, 0, 0, 0.4)
+      shadowBlur: 0.25
+      shadowVerticalOffset: 0.5
+    }
     Behavior on x { MotionAnimation { theme: sw.view.host.theme; pace: "standard" } }
   }
   MouseArea {

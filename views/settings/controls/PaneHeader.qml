@@ -11,22 +11,22 @@ Rectangle {
   property bool compact: false
   readonly property var info: header.view.pageInfo[page] || ({})
   Layout.fillWidth: true
-  implicitHeight: headerColumn.implicitHeight + (compact ? 12 : 36)
+  implicitHeight: headerColumn.implicitHeight + (compact ? 12 : 30)
   radius: 12
   color: compact ? "transparent" : header.view.card
   border.width: compact ? 0 : 1
-  border.color: header.view.host.theme.withAlpha(header.view.text, 0.04)
+  border.color: header.view.edge
   Column {
     id: headerColumn
     anchors.centerIn: parent
     width: header.compact ? parent.width - 4 : Math.min(parent.width - 48, 380)
-    spacing: header.compact ? 6 : 8
+    spacing: header.compact ? 6 : 6
     PaneIcon {
       visible: !header.compact
       view: header.view
       anchors.horizontalCenter: parent.horizontalCenter
-      width: 48
-      height: 48
+      width: 44
+      height: 44
       glyph: header.info.icon || ""
       tint: header.info.color || header.view.accent
       layers: header.info.layers || []
@@ -39,6 +39,7 @@ Rectangle {
       font.family: header.view.host.theme.textFontFamily
       font.pixelSize: header.compact ? header.view.host.theme.px(22) : header.view.detailTitleFontSize
       font.weight: Font.Bold
+      font.letterSpacing: -0.3
     }
     Text {
       width: parent.width
@@ -49,7 +50,7 @@ Rectangle {
       lineHeight: 1.1
       color: header.view.textMuted
       font.family: header.view.host.theme.textFontFamily
-      font.pixelSize: header.view.detailFontSize - 1
+      font.pixelSize: header.view.detailCaptionFontSize
     }
   }
 }

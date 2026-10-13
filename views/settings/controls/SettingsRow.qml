@@ -16,27 +16,28 @@ Item {
   property int indent: 0
   default property alias control: slot.data
   Layout.fillWidth: true
-  // Grows with the text size so a larger label and detail keep their margins.
-  implicitHeight: Math.max(detail !== "" ? 54 : 42, labels.implicitHeight + 16)
+  // 44 as macOS's rows, detail line or not; grows with the text size so a
+  // larger label and detail keep their margins.
+  implicitHeight: Math.max(44, labels.implicitHeight + 12)
   PaneIcon {
     id: rowIcon
     visible: row.icon !== ""
     view: row.view
     x: 14 + row.indent
     anchors.verticalCenter: parent.verticalCenter
-    width: 28
-    height: 28
+    width: 24
+    height: 24
     glyph: row.icon
     tint: row.iconTint
   }
   Column {
     id: labels
     anchors.left: parent.left
-    anchors.leftMargin: 14 + row.indent + (row.icon !== "" ? rowIcon.width + 12 : 0)
+    anchors.leftMargin: 14 + row.indent + (row.icon !== "" ? rowIcon.width + 10 : 0)
     anchors.right: slot.left
     anchors.rightMargin: 12
     anchors.verticalCenter: parent.verticalCenter
-    spacing: 2
+    spacing: 1
     Text {
       width: parent.width
       text: row.label
@@ -58,7 +59,7 @@ Item {
   Item {
     id: slot
     anchors.right: parent.right
-    anchors.rightMargin: 12
+    anchors.rightMargin: 14
     anchors.verticalCenter: parent.verticalCenter
     width: childrenRect.width
     height: childrenRect.height

@@ -11,34 +11,36 @@ Rectangle {
   readonly property var info: side.view.pageInfo[title] || ({})
   readonly property bool selected: side.view.currentPage === title
   Layout.fillWidth: true
-  Layout.preferredHeight: 36
+  Layout.preferredHeight: 32
   radius: 8
   visible: side.view.pageMatches(title)
-  color: selected ? side.view.accent : sideMouse.containsMouse ? side.view.host.theme.withAlpha(side.view.text, 0.06) : "transparent"
+  // A neutral grey for the open pane, as macOS's sidebar.
+  color: selected ? side.view.host.theme.withAlpha(side.view.text, 0.12)
+    : sideMouse.containsMouse ? side.view.host.theme.withAlpha(side.view.text, 0.06) : "transparent"
   Behavior on color { MotionColorAnimation { theme: side.view.host.theme } }
   scale: sideMouse.pressed ? 0.985 : 1
   Behavior on scale { MotionAnimation { theme: side.view.host.theme; pace: sideMouse.pressed ? "press" : "standard" } }
   RowLayout {
     anchors.fill: parent
-    anchors.leftMargin: 8
+    anchors.leftMargin: 6
     anchors.rightMargin: 8
-    spacing: 10
+    spacing: 9
     PaneIcon {
       view: side.view
-      Layout.preferredWidth: 26
-      Layout.preferredHeight: 26
+      Layout.preferredWidth: 22
+      Layout.preferredHeight: 22
       glyph: side.info.icon || ""
       tint: side.info.color || side.view.accent
       layers: side.info.layers || []
-      onAccent: side.selected
     }
     Text {
       Layout.fillWidth: true
       text: side.title
       elide: Text.ElideRight
-      color: side.selected ? side.view.accentInk : side.view.text
+      color: side.view.text
       font.family: side.view.host.theme.textFontFamily
-      font.pixelSize: side.view.host.theme.px(15)
+      font.pixelSize: side.view.detailFontSize
+      font.weight: side.selected ? Font.Medium : Font.Normal
     }
   }
   MouseArea {

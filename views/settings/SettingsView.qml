@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell.Io
 import "../../components"
 import QtQuick.Layouts
+import QtQuick.Effects
 import "controls"
 import "pages"
 
@@ -63,12 +64,13 @@ Item {
   readonly property color card: Qt.tint(panel, host.theme.withAlpha(text, 0.075))
   readonly property color well: Qt.tint(panel, host.theme.withAlpha(text, 0.16))
   readonly property color wellHover: Qt.tint(panel, host.theme.withAlpha(text, 0.22))
-  readonly property color divider: host.theme.withAlpha(text, 0.09)
+  readonly property color divider: host.theme.withAlpha(text, 0.07)
+  readonly property color edge: host.theme.withAlpha(text, 0.07)
   readonly property color accent: host.theme.accent
   readonly property color accentInk: host.theme.accentText
 
-  readonly property int detailFontSize: host.theme.px(15)
-  readonly property int detailCaptionFontSize: host.theme.px(13)
+  readonly property int detailFontSize: host.theme.px(14)
+  readonly property int detailCaptionFontSize: host.theme.px(12)
   readonly property int detailTitleFontSize: host.theme.px(19)
 
   function revealSettingsItem(item) {
@@ -112,25 +114,25 @@ Item {
       radius: 14
       color: settingsView.sidebar
       border.width: 1
-      border.color: settingsView.host.theme.withAlpha(settingsView.text, 0.05)
+      border.color: settingsView.edge
       ColumnLayout {
         anchors.fill: parent
         anchors.leftMargin: 10
         anchors.rightMargin: 10
-        anchors.topMargin: 14
+        anchors.topMargin: 12
         anchors.bottomMargin: 12
-        spacing: 2
+        spacing: 1
         Rectangle {
           Layout.fillWidth: true
           Layout.preferredHeight: 28
           Layout.bottomMargin: 10
-          radius: 7
+          radius: height / 2
           color: settingsView.host.theme.withAlpha(settingsView.text, 0.08)
           border.width: searchInput.activeFocus ? 2 : 0
           border.color: settingsView.host.theme.withAlpha(settingsView.accent, 0.6)
           Text {
             anchors.left: parent.left
-            anchors.leftMargin: 8
+            anchors.leftMargin: 10
             anchors.verticalCenter: parent.verticalCenter
             text: "󰍉"
             color: settingsView.textMuted
@@ -139,7 +141,7 @@ Item {
           }
           Text {
             anchors.left: parent.left
-            anchors.leftMargin: 28
+            anchors.leftMargin: 30
             anchors.verticalCenter: parent.verticalCenter
             visible: searchInput.text === ""
             text: "Search"
@@ -150,7 +152,7 @@ Item {
           TextInput {
             id: searchInput
             anchors.left: parent.left
-            anchors.leftMargin: 28
+            anchors.leftMargin: 30
             anchors.right: parent.right
             anchors.rightMargin: 8
             anchors.verticalCenter: parent.verticalCenter
@@ -202,7 +204,7 @@ Item {
         id: scroller
         Layout.fillWidth: true
         Layout.fillHeight: true
-        contentHeight: groups.implicitHeight + 16
+        contentHeight: groups.implicitHeight + 28
         clip: true
         boundsBehavior: Flickable.StopAtBounds
 
@@ -212,7 +214,7 @@ Item {
           width: scroller.width - 8
           spacing: 20
 
-          PaneHeader { view: settingsView; page: settingsView.currentPage; Layout.topMargin: 4 }
+          PaneHeader { view: settingsView; page: settingsView.currentPage }
           GeneralPage { view: settingsView }
           ActivitiesPage { view: settingsView }
           NotificationsPage { view: settingsView }
@@ -241,6 +243,28 @@ Item {
           KeybindsPage { id: keybindsPage; view: settingsView }
         }
       }
+      // Soft edges where the page runs on above or below.
+      Repeater {
+        model: [
+          { top: true, shown: scroller.contentY > 1 },
+          { top: false, shown: scroller.contentY < scroller.contentHeight - scroller.height - 1 }
+        ]
+        delegate: Rectangle {
+          required property var modelData
+          parent: scroller
+          z: 1
+          anchors.left: parent.left
+          anchors.right: parent.right
+          y: modelData.top ? 0 : scroller.height - height
+          height: 24
+          opacity: modelData.shown ? 1 : 0
+          Behavior on opacity { MotionAnimation { theme: settingsView.host.theme; pace: "fade"; curve: "fade" } }
+          gradient: Gradient {
+            GradientStop { position: 0; color: modelData.top ? settingsView.panel : "transparent" }
+            GradientStop { position: 1; color: modelData.top ? "transparent" : settingsView.panel }
+          }
+        }
+      }
     }
   }
 
@@ -257,8 +281,11 @@ Item {
     popMenu.height = button.options.length * 28 + 10
     var p = button.mapToItem(settingsView, 0, 0)
     popMenu.x = Math.max(4, p.x + button.width - popMenu.width)
-    var below = p.y + button.height + 4
-    popMenu.y = below + popMenu.height <= height - 4 ? below : p.y - popMenu.height - 4
+    // As macOS's pop-up menus: the current choice opens over the button.
+    var chosen = 0
+    for (var j = 0; j < button.options.length; j++) if (button.options[j].value === button.value) chosen = j
+    var y = p.y + (button.height - 28) / 2 - 5 - chosen * 28
+    popMenu.y = Math.max(4, Math.min(height - popMenu.height - 4, y))
     menuButton = button
   }
   MouseArea {
@@ -275,13 +302,20 @@ Item {
     enabled: !!settingsView.menuButton
     opacity: settingsView.menuButton ? 1 : 0
     scale: settingsView.menuButton ? 1 : 0.96
-    transformOrigin: Item.Top
+    transformOrigin: Item.Center
     Behavior on opacity { MotionAnimation { theme: settingsView.host.theme; pace: settingsView.menuButton ? "fade" : "exit"; curve: "fade" } }
     Behavior on scale { MotionAnimation { theme: settingsView.host.theme; pace: settingsView.menuButton ? "standard" : "exit" } }
-    radius: 9
+    radius: 10
     color: Qt.tint(settingsView.panel, settingsView.host.theme.withAlpha(settingsView.text, 0.13))
     border.width: 1
-    border.color: settingsView.host.theme.withAlpha(settingsView.text, 0.1)
+    border.color: settingsView.host.theme.withAlpha(settingsView.text, 0.12)
+    layer.enabled: visible
+    layer.effect: MultiEffect {
+      shadowEnabled: true
+      shadowColor: Qt.rgba(0, 0, 0, 0.5)
+      shadowBlur: 0.8
+      shadowVerticalOffset: 6
+    }
     Column {
       id: menuColumn
       x: 5
@@ -385,10 +419,17 @@ Item {
     readonly property int rowHeight: Math.max(26, settingsView.detailFontSize + 11)
     width: 264
     height: fontSearch.height + 10 + Math.max(1, Math.min(9, settingsView.filteredFonts.length)) * fontPanel.rowHeight + 10
-    radius: 9
+    radius: 10
     color: Qt.tint(settingsView.panel, settingsView.host.theme.withAlpha(settingsView.text, 0.13))
     border.width: 1
-    border.color: settingsView.host.theme.withAlpha(settingsView.text, 0.1)
+    border.color: settingsView.host.theme.withAlpha(settingsView.text, 0.12)
+    layer.enabled: visible
+    layer.effect: MultiEffect {
+      shadowEnabled: true
+      shadowColor: Qt.rgba(0, 0, 0, 0.5)
+      shadowBlur: 0.8
+      shadowVerticalOffset: 6
+    }
 
     Rectangle {
       id: fontSearch

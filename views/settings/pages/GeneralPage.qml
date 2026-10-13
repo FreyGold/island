@@ -41,7 +41,7 @@ ColumnLayout {
     SettingsRow {
       view: page.view
       label: "Colorful Live Activities"
-      detail: "Use custom colors in live activies"
+      detail: "Use custom colors in live activities"
       SettingsSwitch {
         view: page.view
         checked: page.view.settings.colorfulLiveActivities

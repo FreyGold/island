@@ -1,6 +1,7 @@
 import QtQuick
 import "../../../components"
 
+// App Store's capsule button: "Add" in the accent, "Remove" quieter.
 Rectangle {
   id: button
   required property var view
@@ -16,12 +17,11 @@ Rectangle {
   Text {
     id: buttonText
     anchors.centerIn: parent
-    text: button.added ? "REMOVE" : "ADD"
-    color: button.added ? button.view.textMuted : button.view.text
+    text: button.added ? "Remove" : "Add"
+    color: button.added ? button.view.textMuted : button.view.accent
     font.family: button.view.host.theme.textFontFamily
-    font.pixelSize: button.view.host.theme.px(12)
-    font.weight: Font.Bold
-    font.letterSpacing: 0.3
+    font.pixelSize: button.view.host.theme.px(13)
+    font.weight: button.added ? Font.Medium : Font.DemiBold
   }
   MouseArea {
     id: buttonMouse

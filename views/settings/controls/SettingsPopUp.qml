@@ -2,8 +2,9 @@ import QtQuick
 import "../../../components"
 import QtQuick.Layouts
 
-// Pop-up button: the current choice with up/down chevrons; the choices open
-// in a menu (see popMenu below).
+// Pop-up button, as iOS's: the current choice in grey with up/down
+// chevrons, boxed only while hovered or open; the choices open in a menu
+// (see popMenu in SettingsView).
 // `view` is the SettingsView, for its colours.
 Rectangle {
   id: pop
@@ -16,10 +17,13 @@ Rectangle {
     return ""
   }
   readonly property bool open: pop.view.menuButton === pop
-  implicitWidth: Math.max(96, popLabel.implicitWidth + 40)
+  implicitWidth: popLabel.implicitWidth + 36
   implicitHeight: 28
-  radius: 6
-  color: open || popMouse.containsMouse ? pop.view.wellHover : pop.view.well
+  // Nudged into the row's margin so the chevrons line up with the switches
+  // and keycaps; the hover box reaches past them.
+  transform: Translate { x: 8 }
+  radius: 8
+  color: open || popMouse.containsMouse ? pop.view.well : pop.view.host.theme.withAlpha(pop.view.well, 0)
   Behavior on color { MotionColorAnimation { theme: pop.view.host.theme } }
   scale: popMouse.pressed ? 0.98 : 1
   Behavior on scale { MotionAnimation { theme: pop.view.host.theme; pace: popMouse.pressed ? "press" : "standard" } }
@@ -29,7 +33,7 @@ Rectangle {
     anchors.leftMargin: 10
     anchors.verticalCenter: parent.verticalCenter
     text: pop.currentLabel
-    color: pop.view.text
+    color: pop.view.textMuted
     font.family: pop.view.host.theme.textFontFamily
     font.pixelSize: pop.view.detailFontSize
   }

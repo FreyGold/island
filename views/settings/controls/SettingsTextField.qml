@@ -1,7 +1,7 @@
 import QtQuick
 import "../../../components"
 
-// One-line text field. `committed` fires with the trimmed text on Enter or
+// One-line text field, inset as macOS's, with its focus ring. `committed` fires with the trimmed text on Enter or
 // when the field loses focus, only if it changed; Esc puts back `value`.
 // `view` is the SettingsView, for its colours.
 Rectangle {
@@ -13,10 +13,24 @@ Rectangle {
   implicitWidth: 200
   implicitHeight: 28
   radius: 6
-  color: input.activeFocus || fieldMouse.containsMouse ? field.view.wellHover : field.view.well
-  border.width: input.activeFocus ? 2 : 0
-  border.color: field.view.host.theme.withAlpha(field.view.accent, 0.6)
+  color: Qt.tint(field.view.panel, field.view.host.theme.withAlpha(field.view.text, input.activeFocus ? 0.04 : fieldMouse.containsMouse ? 0.07 : 0.05))
+  border.width: 1
+  border.color: field.view.host.theme.withAlpha(field.view.text, input.activeFocus ? 0.18 : 0.12)
   Behavior on color { MotionColorAnimation { theme: field.view.host.theme } }
+  // Focus ring: settles in from slightly larger, like macOS's.
+  Rectangle {
+    anchors.centerIn: parent
+    width: parent.width + 6
+    height: parent.height + 6
+    radius: parent.radius + 3
+    color: "transparent"
+    border.width: 3
+    border.color: field.view.host.theme.withAlpha(field.view.accent, 0.5)
+    opacity: input.activeFocus ? 1 : 0
+    scale: input.activeFocus ? 1 : 1.12
+    Behavior on opacity { MotionAnimation { theme: field.view.host.theme; pace: "fade"; curve: "fade" } }
+    Behavior on scale { MotionAnimation { theme: field.view.host.theme; pace: "standard" } }
+  }
 
   onValueChanged: if (!input.activeFocus) input.text = value
   Component.onCompleted: input.text = value
