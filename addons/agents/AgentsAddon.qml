@@ -11,16 +11,20 @@ import ".."
 // reuse their recent transcript scans, so only the limits go over the wire.
 Addon {
   id: agents
+  // Drawn with the picked agent's logo, not the addon's, at its size; the
+  // pane leads with the agent as its own header (see AgentsPage).
   settingsPages: [{
-    title: "Agents",
+    title: "Agents", icon: provider.glyph, color: provider.color, header: false,
+    iconLayers: [{ glyph: provider.glyph, color: "#ffffff", x: 0.5, y: 0.5, size: provider.glyphSize }],
     source: Qt.resolvedUrl("AgentsPage.qml"), properties: { agents: agents },
     about: "Usage limits and tokens by day for your coding agent.",
     search: "agents ai claude code codex usage limits rate session 5-hour five hour weekly week tokens day plan subscription"
   }]
 
+  // Claude's mark reads smaller than Codex's at the same size, so it's drawn larger.
   readonly property var providers: ({
-    claude: { id: "claude", name: "Claude Code", glyph: "", color: "#d97757", login: "claude auth login" },
-    codex: { id: "codex", name: "Codex", glyph: "", color: "#0a84ff", login: "codex login" }
+    claude: { id: "claude", name: "Claude Code", glyph: "", glyphSize: 0.7, color: "#d97757", login: "claude auth login" },
+    codex: { id: "codex", name: "Codex", glyph: "", glyphSize: 0.6, color: "#0a84ff", login: "codex login" }
   })
   readonly property var provider: providers[addon.option("agent")] || providers.claude
 
@@ -39,9 +43,18 @@ Addon {
     watchChanges: true
     printErrors: false
     onLoaded: {
-      try { agents.record = JSON.parse(text()) } catch (e) {}
+      try { agents.take(JSON.parse(text())) } catch (e) {}
     }
     onFileChanged: reload()
+  }
+
+  // Mid-refresh, Codex's record lands without limits before codex-limits.py
+  // fills them in; the ones already shown are kept until then.
+  function take(next) {
+    var old = record
+    if (updating && old && old.id === next.id && !(next.limits || []).length && (old.limits || []).length)
+      next = Object.assign({}, next, { limits: old.limits, usageStatusText: "", tierLabel: next.tierLabel || old.tierLabel })
+    record = next
   }
 
   // A run collapses into one queued rerun if asked again meanwhile.
@@ -60,9 +73,14 @@ Addon {
   function refresh() {
     if (update.running) { rerun = true; return }
     updating = true
-    update.command = ["omarchy-agent-usage-update", provider.id]
+    // Codex's collector gives up on its limits here, so codex-limits.py
+    // fills them in after it (see there).
+    update.command = provider.id === "codex"
+      ? ["bash", "-c", "omarchy-agent-usage-update codex; python3 \"$1\"", "bash", agents.localPath("codex-limits.py")]
+      : ["omarchy-agent-usage-update", provider.id]
     update.running = true
   }
+  function localPath(file) { return decodeURIComponent(String(Qt.resolvedUrl(file)).replace("file://", "")) }
   Timer {
     interval: 5 * 60 * 1000
     repeat: true

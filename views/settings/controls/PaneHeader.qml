@@ -2,7 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 
 // The header System Settings puts at the top of a pane: the pane's icon,
-// its name, and what it's for.
+// its name, and what it's for. Hidden for an addon pane that draws its own
+// (`header: false`, see addons/Addon.qml).
 // `view` is the SettingsView, for its colours.
 Rectangle {
   id: header
@@ -10,6 +11,7 @@ Rectangle {
   property string page: ""
   property bool compact: false
   readonly property var info: header.view.pageInfo[page] || ({})
+  visible: header.info.header !== false
   Layout.fillWidth: true
   implicitHeight: headerColumn.implicitHeight + (compact ? 12 : 30)
   radius: 12

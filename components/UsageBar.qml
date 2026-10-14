@@ -2,8 +2,9 @@ import QtQuick
 import QtQuick.Effects
 import QtQuick.Layouts
 
-// The bar Storage settings draws: a rounded track split into coloured
-// segments, and (with `legend`) each segment's dot, name, and amount below.
+// The bar Storage settings draws (System Stats, Agents): a rounded track
+// split into coloured segments, and (with `legend`) each segment's dot, name,
+// and amount below.
 //   segments  [{ label, value, color, text }], value in the same unit as total.
 ColumnLayout {
   id: usage

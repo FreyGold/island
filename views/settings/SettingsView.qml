@@ -24,7 +24,7 @@ Item {
   readonly property var pageInfo: {
     var info = Object.assign({}, corePageInfo)
     for (var i = 0; i < addonPages.length; i++)
-      info[addonPages[i].title] = { icon: addonPages[i].icon, color: addonPages[i].color, layers: addonPages[i].iconLayers || [], about: addonPages[i].about || "" }
+      info[addonPages[i].title] = { icon: addonPages[i].icon, color: addonPages[i].color, layers: addonPages[i].iconLayers || [], about: addonPages[i].about || "", header: addonPages[i].header !== false }
     return info
   }
   readonly property var corePageInfo: ({

@@ -1,9 +1,10 @@
 import QtQuick
 import QtQuick.Layouts
 
-// A System Settings group for the System Stats pane: a bold title over the
-// box, with the reading's meaning on the right as a coloured dot and a word,
-// or (in `accessory`) a control such as a search field.
+// A System Settings group for the widget panes (System Stats, Agents): a
+// bold title over the box, with the reading's meaning on the right as a
+// coloured dot and a word, or (in `accessory`) a control such as a search
+// field. With no title, just the box.
 ColumnLayout {
   id: section
   required property var view
@@ -15,6 +16,7 @@ ColumnLayout {
   spacing: 7
 
   RowLayout {
+    visible: section.title !== ""
     Layout.fillWidth: true
     Layout.leftMargin: 14
     Layout.rightMargin: 14

@@ -20,7 +20,9 @@ import QtQuick
 //           properties }], each a pane in Settings' sidebar after Addons,
 //           made from the file at `source` with `properties` and `view`
 //           (the SettingsView) while it's the open pane, and told `shown`
-//           while Settings is on screen too.
+//           while Settings is on screen too. With `header: false` the
+//           pane draws its own header in place of Settings' icon, title,
+//           and `about`.
 //   launcherRow(text)  a row the launcher adds for its typed text, or null:
 //           { glyph, tile, ink, label, detail, first, run }, a glyph on a
 //           tile of its colors, then label and muted detail. `first` puts
