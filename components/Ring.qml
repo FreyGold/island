@@ -2,13 +2,15 @@ import QtQuick
 import QtQuick.Shapes
 
 // A usage ring: a faint track and an arc from the top, clockwise, with the
-// percentage in its middle.
+// percentage in its middle (or `text`, with an optional `caption` under it).
 Item {
   id: ring
   required property var view
   property real value: 0          // 0–100
   property color color: "#0a84ff"
   property real thickness: 7
+  property string text: Math.round(value) + "%"
+  property string caption: ""
   implicitWidth: 84
   implicitHeight: 84
 
@@ -40,13 +42,24 @@ Item {
       }
     }
   }
-  Text {
+  Column {
     anchors.centerIn: parent
-    text: Math.round(ring.value) + "%"
-    color: ring.view.text
-    font.family: "Adwaita Sans"
-    font.pixelSize: Math.round(ring.width * 0.2)
-    font.weight: Font.DemiBold
-    font.features: { "tnum": 1 }
+    Text {
+      anchors.horizontalCenter: parent.horizontalCenter
+      text: ring.text
+      color: ring.view.text
+      font.family: ring.view.host.theme.textFontFamily
+      font.pixelSize: Math.round(ring.width * 0.2)
+      font.weight: Font.DemiBold
+      font.features: { "tnum": 1 }
+    }
+    Text {
+      anchors.horizontalCenter: parent.horizontalCenter
+      visible: ring.caption !== ""
+      text: ring.caption
+      color: ring.view.textMuted
+      font.family: ring.view.host.theme.textFontFamily
+      font.pixelSize: Math.round(ring.width * 0.13)
+    }
   }
 }

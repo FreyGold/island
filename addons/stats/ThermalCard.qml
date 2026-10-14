@@ -3,8 +3,10 @@ import QtQuick
 import QtQuick.Layouts
 import "../../components"
 
-// How hot the machine runs, as macOS puts it: one word for whichever part
-// runs hottest for its kind, the temperatures under it, and the scale.
+// How hot the machine runs, as macOS puts it: the hottest part's temperature
+// on a ring like the other boxes', in its level's colour, beside each part's
+// temperature; and (as `levelName`, for the title
+// above it; see Section) one word for whichever part runs hottest for its kind.
 // Chips are Good under 70 °C, Fair under 80, High under 90; SSDs, which
 // slow down sooner, 20 °C lower.
 Card {
@@ -12,8 +14,8 @@ Card {
   property var temps: []          // [{ label, value, ssd }]
   readonly property var levels: [
     { label: "Good", color: "#30d158" },
-    { label: "Fair", color: "#248a3d" },
-    { label: "High", color: "#ffd60a" },
+    { label: "Fair", color: "#ffd60a" },
+    { label: "High", color: "#ff9f0a" },
     { label: "Max", color: "#ff453a" }
   ]
   function levelOf(t) {
@@ -21,73 +23,84 @@ Card {
     return t.value < good ? 0 : t.value < good + 10 ? 1 : t.value < good + 20 ? 2 : 3
   }
   readonly property int level: temps.reduce(function(top, t) { return Math.max(top, card.levelOf(t)) }, 0)
-  implicitHeight: body.implicitHeight + 32
+  readonly property string levelName: temps.length ? levels[level].label : ""
+  // The part furthest into its scale: the highest level, then the hottest.
+  readonly property var hottest: temps.reduce(function(top, t) {
+    if (!top) return t
+    var a = card.levelOf(t), b = card.levelOf(top)
+    return a > b || (a === b && t.value > top.value) ? t : top
+  }, null)
+  readonly property color levelColor: levels[level].color
+  implicitHeight: body.implicitHeight + 28
 
-  ColumnLayout {
+  RowLayout {
     id: body
-    anchors.fill: parent
-    anchors.margins: 16
-    spacing: 6
+    anchors.left: parent.left
+    anchors.right: parent.right
+    anchors.verticalCenter: parent.verticalCenter
+    anchors.margins: 14
+    spacing: 14
 
-    RowLayout {
+    // The hottest part as a ring like the other boxes': its temperature
+    // toward its Max (100 °C for chips, 80 for SSDs), in its level's colour.
+    Ring {
+      view: card.view
+      Layout.preferredWidth: 78
+      Layout.preferredHeight: 78
+      thickness: 9
+      value: card.hottest ? card.hottest.value / ((card.hottest.ssd ? 50 : 70) + 30) * 100 : 0
+      color: card.levelColor
+      text: card.hottest ? Math.round(card.hottest.value) + "°" : "—"
+      caption: card.hottest ? card.hottest.label : ""
+    }
+
+    // A row per part, as the other boxes' figures: its name, a dot in its
+    // level's colour, and its temperature.
+    ColumnLayout {
       Layout.fillWidth: true
-      spacing: 8
-      Text {
-        text: "󰔏"
-        color: card.levels[card.level].color
-        font.family: card.view.host.theme.fontFamily
-        font.pixelSize: card.view.host.theme.px(16)
-      }
-      Text {
-        Layout.fillWidth: true
-        text: "Thermal"
-        color: card.view.text
-        font.family: "Adwaita Sans"
-        font.pixelSize: card.view.detailFontSize + 1
-        font.weight: Font.DemiBold
-      }
-    }
-    Item { Layout.fillHeight: true }
-    Text {
-      text: card.temps.length ? card.levels[card.level].label : "—"
-      color: card.levels[card.level].color
-      font.family: "Adwaita Sans"
-      font.pixelSize: card.view.host.theme.px(24)
-      font.weight: Font.DemiBold
-    }
-    Text {
-      Layout.fillWidth: true
-      text: card.temps.map(function(t) { return t.label + " " + Math.round(t.value) + "°" }).join("  ·  ")
-      elide: Text.ElideRight
-      color: card.view.textMuted
-      font.family: "Adwaita Sans"
-      font.pixelSize: card.view.host.theme.px(13)
-      font.features: { "tnum": 1 }
-    }
-    Item { Layout.fillHeight: true }
-    Row {
-      spacing: 12
+      Layout.alignment: Qt.AlignVCenter
+      spacing: 0
       Repeater {
-        model: card.levels
-        delegate: Row {
-          id: key
-          required property var modelData
+        model: card.temps.length
+        delegate: Item {
+          id: reading
           required property int index
-          readonly property bool current: index === card.level && card.temps.length > 0
-          spacing: 5
-          Rectangle {
-            anchors.verticalCenter: parent.verticalCenter
-            width: 7
-            height: 7
-            radius: 3.5
-            color: key.modelData.color
-          }
+          readonly property var modelData: card.temps[index] || ({ label: "", value: 0 })
+          Layout.fillWidth: true
+          Layout.preferredHeight: 26
           Text {
-            text: key.modelData.label
-            color: key.current ? card.view.text : card.view.textMuted
-            font.family: "Adwaita Sans"
-            font.pixelSize: card.view.host.theme.px(13)
-            font.weight: key.current ? Font.DemiBold : Font.Normal
+            anchors.left: parent.left
+            anchors.verticalCenter: parent.verticalCenter
+            text: reading.modelData.label
+            color: card.view.text
+            font.family: card.view.host.theme.textFontFamily
+            font.pixelSize: card.view.detailCaptionFontSize + 1
+          }
+          Row {
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 6
+            Rectangle {
+              anchors.verticalCenter: parent.verticalCenter
+              width: 6
+              height: 6
+              radius: 3
+              color: card.levels[card.levelOf(reading.modelData)].color
+            }
+            Text {
+              text: Math.round(reading.modelData.value) + " °C"
+              color: card.view.textMuted
+              font.family: card.view.host.theme.textFontFamily
+              font.pixelSize: card.view.detailCaptionFontSize + 1
+              font.features: { "tnum": 1 }
+            }
+          }
+          Rectangle {
+            visible: reading.index < card.temps.length - 1
+            anchors.bottom: parent.bottom
+            width: parent.width
+            height: 1
+            color: card.view.divider
           }
         }
       }

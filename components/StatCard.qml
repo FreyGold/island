@@ -16,17 +16,21 @@ Card {
   property var rows: []
   property string status: ""
   property color statusColor: "#30d158"
-  implicitHeight: body.implicitHeight + 32
+  // Off when the title sits outside the card (see the System Stats pane).
+  property bool header: true
+  property int padding: 16
+  implicitHeight: body.implicitHeight + 2 * padding
 
   ColumnLayout {
     id: body
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: parent.top
-    anchors.margins: 16
+    anchors.margins: card.padding
     spacing: 14
 
     RowLayout {
+      visible: card.header
       Layout.fillWidth: true
       spacing: 8
       Text {
@@ -40,7 +44,7 @@ Card {
         text: card.title
         elide: Text.ElideRight
         color: card.view.text
-        font.family: "Adwaita Sans"
+        font.family: card.view.host.theme.textFontFamily
         font.pixelSize: card.view.detailFontSize + 1
         font.weight: Font.DemiBold
       }
@@ -55,7 +59,7 @@ Card {
           anchors.centerIn: parent
           text: card.status
           color: card.statusColor
-          font.family: "Adwaita Sans"
+          font.family: card.view.host.theme.textFontFamily
           font.pixelSize: card.view.host.theme.px(12)
           font.weight: Font.DemiBold
         }
@@ -73,7 +77,9 @@ Card {
         Layout.preferredWidth: 78
         Layout.preferredHeight: 78
       }
-      // Figures as an inset list: label left, value right, hairlines between.
+      // Figures as an inset list: label left, value right, hairlines between;
+      // on a flat card, as System Settings' rows: the label in the text
+      // colour and the value secondary.
       ColumnLayout {
         Layout.fillWidth: true
         Layout.alignment: Qt.AlignVCenter
@@ -92,18 +98,18 @@ Card {
               anchors.left: parent.left
               anchors.verticalCenter: parent.verticalCenter
               text: figure.modelData.label
-              color: card.view.textMuted
-              font.family: "Adwaita Sans"
-              font.pixelSize: card.view.host.theme.px(13)
+              color: card.flat ? card.view.text : card.view.textMuted
+              font.family: card.view.host.theme.textFontFamily
+              font.pixelSize: card.flat ? card.view.detailCaptionFontSize + 1 : card.view.host.theme.px(13)
             }
             Text {
               anchors.right: parent.right
               anchors.verticalCenter: parent.verticalCenter
               text: figure.modelData.value
-              color: figure.modelData.color || card.view.text
-              font.family: "Adwaita Sans"
-              font.pixelSize: card.view.host.theme.px(14)
-              font.weight: Font.DemiBold
+              color: figure.modelData.color || (card.flat ? card.view.textMuted : card.view.text)
+              font.family: card.view.host.theme.textFontFamily
+              font.pixelSize: card.flat ? card.view.detailCaptionFontSize + 1 : card.view.host.theme.px(14)
+              font.weight: card.flat ? Font.Normal : Font.DemiBold
               font.features: { "tnum": 1 }
             }
             Rectangle {

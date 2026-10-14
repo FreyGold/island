@@ -11,6 +11,8 @@ Item {
   property bool above: false
   property bool shown: false
   property var theme: null
+  // Wraps longer text at this width (0: one line, however long).
+  property int maxWidth: 0
   readonly property Item overlay: tip.Window.contentItem
   anchors.fill: parent
   // Above the button's own MouseArea, which would otherwise take the hover;
@@ -38,8 +40,8 @@ Item {
     scale: tip.shown ? 1 : 0.97
     transformOrigin: tip.above ? Item.Bottom : Item.Top
     Behavior on scale { MotionAnimation { theme: tip.theme; pace: "quick" } }
-    width: label.implicitWidth + 16
-    height: label.implicitHeight + 8
+    width: label.width + 16
+    height: label.height + 8
     radius: 6
     color: "#2c2c2e"
     border.width: 1
@@ -55,6 +57,8 @@ Item {
       id: label
       anchors.centerIn: parent
       text: tip.text
+      width: tip.maxWidth > 0 ? Math.min(implicitWidth, tip.maxWidth) : implicitWidth
+      wrapMode: tip.maxWidth > 0 ? Text.WrapAtWordBoundaryOrAnywhere : Text.NoWrap
       color: "#f2f2f7"
       font.family: tip.theme.textFontFamily
       font.pixelSize: tip.theme.px(12)

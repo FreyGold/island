@@ -82,7 +82,7 @@ Item {
         pid: lead.pid, uid: lead.uid, start: lead.start, app: lead.app, depth: 0, children: group.members.length - 1,
         pids: group.members.map(function(p) { return p.pid }),
         name: entry && entry.name ? entry.name : lead.appClass || lead.name,
-        icon: iconFor(entry), cpu: 0, mem: 0, threads: 0
+        icon: iconFor(entry), command: lead.command, cpu: 0, mem: 0, threads: 0
       }
       for (var m = 0; m < group.members.length; m++) {
         var member = group.members[m]
@@ -156,14 +156,14 @@ Item {
           Row {
             anchors.verticalCenter: parent.verticalCenter
             anchors.left: head.isName ? parent.left : undefined
-            anchors.leftMargin: head.isName ? 26 : 0
+            anchors.leftMargin: head.isName ? 36 : 0
             anchors.right: head.isName ? undefined : parent.right
             anchors.rightMargin: 6
             spacing: 3
             Text {
               text: head.modelData.title
               color: head.sorted ? table.view.text : table.view.textMuted
-              font.family: "Adwaita Sans"
+              font.family: table.view.host.theme.textFontFamily
               font.pixelSize: table.view.host.theme.px(12)
               font.weight: Font.DemiBold
             }
@@ -230,6 +230,7 @@ Item {
         anchors.fill: parent
         radius: 6
         color: row.selected ? table.view.accent
+          : rowHover.hovered ? table.view.host.theme.withAlpha(table.view.text, 0.09)
           : row.index % 2 === 1 ? table.view.host.theme.withAlpha(table.view.text, 0.04) : "transparent"
       }
       MouseArea {
@@ -264,7 +265,7 @@ Item {
                   visible: row.modelData.children > 0
                   text: row.modelData.open ? "▾" : "▸"
                   color: row.inkMuted
-                  font.family: "Adwaita Sans"
+                  font.family: table.view.host.theme.textFontFamily
                   font.pixelSize: table.view.host.theme.px(11)
                 }
                 MouseArea {
@@ -302,8 +303,18 @@ Item {
                 text: row.modelData.name
                 elide: Text.ElideRight
                 color: row.ink
-                font.family: "Adwaita Sans"
+                font.family: table.view.host.theme.textFontFamily
                 font.pixelSize: table.view.host.theme.px(13)
+                // The full name, its PID (or its app's processes), and the
+                // command that started it.
+                Tooltip {
+                  theme: table.view.host.theme
+                  maxWidth: 360
+                  text: row.modelData.pid < 0 ? ""
+                    : row.modelData.name + "\n"
+                      + (row.modelData.pids ? row.modelData.pids.length + " processes" : "PID " + row.modelData.pid)
+                      + (row.modelData.command ? "\n" + row.modelData.command : "")
+                }
               }
             }
             // Quit Process, at the end of the name.
@@ -343,7 +354,7 @@ Item {
               anchors.verticalCenter: parent.verticalCenter
               text: cellItem.isName ? "" : table.cell(row.modelData, cellItem.modelData.key)
               color: row.ink
-              font.family: "Adwaita Sans"
+              font.family: table.view.host.theme.textFontFamily
               font.pixelSize: table.view.host.theme.px(12)
               font.features: { "tnum": 1 }
             }
@@ -358,7 +369,7 @@ Item {
     visible: table.rows.length === 0
     text: table.stats.latest ? "No Processes" : "Loading…"
     color: table.view.textMuted
-    font.family: "Adwaita Sans"
+    font.family: table.view.host.theme.textFontFamily
     font.pixelSize: table.view.host.theme.px(13)
   }
 }

@@ -84,7 +84,7 @@ Item {
         wrapMode: Text.WordWrap
         text: "Are you sure you want to quit “" + (sheet.row ? sheet.row.name : "") + "”?"
         color: sheet.view.text
-        font.family: "Adwaita Sans"
+        font.family: sheet.view.host.theme.textFontFamily
         font.pixelSize: sheet.view.detailFontSize
         font.weight: Font.Bold
       }
@@ -96,7 +96,7 @@ Item {
           ? "Its " + (sheet.row.children + 1) + " processes will be asked to end. Force Quit ends them at once, losing unsaved work."
           : "Force Quit ends it at once, losing unsaved work."
         color: sheet.view.textMuted
-        font.family: "Adwaita Sans"
+        font.family: sheet.view.host.theme.textFontFamily
         font.pixelSize: sheet.view.detailCaptionFontSize
       }
       RowLayout {

@@ -75,14 +75,14 @@ ColumnLayout {
           anchors.verticalCenter: parent.verticalCenter
           text: parent.modelData.label
           color: usage.view.text
-          font.family: "Adwaita Sans"
+          font.family: usage.view.host.theme.textFontFamily
           font.pixelSize: usage.view.detailCaptionFontSize
         }
         Text {
           anchors.verticalCenter: parent.verticalCenter
           text: parent.modelData.text || ""
           color: usage.view.textMuted
-          font.family: "Adwaita Sans"
+          font.family: usage.view.host.theme.textFontFamily
           font.pixelSize: usage.view.detailCaptionFontSize
         }
       }

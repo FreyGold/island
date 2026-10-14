@@ -7,6 +7,7 @@
 import glob
 import json
 import os
+import re
 import signal
 import socket
 import subprocess
@@ -114,8 +115,23 @@ SKIP_MOUNTS = ("/boot", "/efi")
 REAL_FS = {"ext4", "ext3", "btrfs", "xfs", "f2fs", "vfat", "exfat", "ntfs3", "ntfs", "zfs", "bcachefs"}
 
 
+def disk_labels():
+    # Each labelled partition's name, as the file manager shows it: {device: label}.
+    labels = {}
+    try:
+        for name in os.listdir("/dev/disk/by-label"):
+            device = os.path.basename(os.path.realpath("/dev/disk/by-label/" + name))
+            # udev writes spaces and other bytes as \xNN.
+            raw = re.sub(rb"\\x([0-9a-fA-F]{2})", lambda m: bytes([int(m.group(1), 16)]), name.encode())
+            labels[device] = raw.decode("utf-8", "replace")
+    except OSError:
+        pass
+    return labels
+
+
 def volumes():
     seen, result = set(), []
+    labels = disk_labels()
     for line in read("/proc/self/mounts").splitlines():
         source, target, fstype = line.split()[:3]
         target = target.replace("\\040", " ")
@@ -129,7 +145,8 @@ def volumes():
         size = st.f_blocks * st.f_frsize
         if size == 0:
             continue
-        result.append({"mount": target, "device": os.path.basename(source),
+        device = os.path.basename(source)
+        result.append({"mount": target, "device": device, "label": labels.get(device, ""),
                        "size": size, "used": size - st.f_bfree * st.f_frsize})
     return result
 
@@ -333,6 +350,11 @@ def processes():
     return procs
 
 
+def process_command(pid):
+    # The command line, for the row's tooltip; cut short, as it's sent each reading.
+    return read("/proc/%d/cmdline" % pid).replace("\0", " ").strip()[:160]
+
+
 def process_name(pid, comm):
     if len(comm) < 15:
         return comm
@@ -374,7 +396,7 @@ def main():
     # counted as theirs.
     other_pdevs = {os.path.basename(os.path.realpath(dev)) for _, dev, _ in others}
     # Primed, so the first reading's per-process figures are real ones.
-    names, fd_cache = {}, {}
+    names, commands, fd_cache = {}, {}, {}
     procs = processes()
     last_cpu = cpu_times()
     last_ticks = {(pid, p["start"]): p["ticks"] for pid, p in procs.items()}
@@ -430,6 +452,7 @@ def main():
                 key = (pid, p["comm"])
                 if key not in names:
                     names[key] = process_name(pid, p["comm"])
+                    commands[key] = process_command(pid)
                 # An AMD or Intel GPU's busy share, for its card, as the sum of
                 # what each of your processes keeps it busy (also beside an
                 # NVIDIA card, whose own figures come from nvidia-smi).
@@ -453,6 +476,7 @@ def main():
                     cur = procs[cur]["ppid"] if cur in procs else 0
                     hops += 1
                 rows.append({"pid": pid, "ppid": p["ppid"], "uid": p["uid"], "start": p["start"], "name": names[key],
+                             "command": commands.get(key, ""),
                              "cpu": round(cpu, 1), "mem": p["rss"],
                              "threads": p["threads"], "app": app,
                              "appClass": win.get(pid, "") if app == pid else ""})
@@ -461,6 +485,7 @@ def main():
             last_ticks = {(pid, p["start"]): p["ticks"] for pid, p in procs.items()}
             drm = new_drm
             names = {k: v for k, v in names.items() if k[0] in procs}
+            commands = {k: v for k, v in commands.items() if k[0] in procs}
 
             gpus = list(nvidia.gpus.values()) if nvidia else []
             for card, dev, vendor in others:
