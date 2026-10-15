@@ -24,12 +24,17 @@ Addon {
   // Claude's mark reads smaller than Codex's at the same size, so it's drawn larger.
   readonly property var providers: ({
     claude: { id: "claude", name: "Claude Code", glyph: "", glyphSize: 0.7, color: "#d97757", login: "claude auth login" },
-    codex: { id: "codex", name: "Codex", glyph: "", glyphSize: 0.6, color: "#0a84ff", login: "codex login" }
+    codex: { id: "codex", name: "Codex", glyph: "", glyphSize: 0.6, color: "#0a84ff", login: "codex login" },
+    // Every model on this machine, from all-usage.py: no limits, just tokens.
+    all: { id: "all", name: "All Models", glyph: "󰚩", glyphSize: 0.6, color: "#5e5ce6", login: "" }
   })
   readonly property var provider: providers[addon.option("agent")] || providers.claude
 
   readonly property bool watching: host.view === "settings"
   readonly property string usageDir: host.home + "/.local/state/omarchy/agents/usage"
+  readonly property string recordPath: provider.id === "all"
+    ? host.home + "/.cache/guilhermerisu.island/agents/all.json"
+    : usageDir + "/" + provider.id + ".json"
 
   // The latest record for the picked agent, or null before one is read.
   property var record: null
@@ -39,7 +44,7 @@ Addon {
 
   FileView {
     id: recordFile
-    path: agents.usageDir + "/" + agents.provider.id + ".json"
+    path: agents.recordPath
     watchChanges: true
     printErrors: false
     onLoaded: {
@@ -75,7 +80,12 @@ Addon {
     updating = true
     // Codex's collector gives up on its limits here, so codex-limits.py
     // fills them in after it (see there).
-    update.command = provider.id === "codex"
+    // All Models regenerates both agents' records, then merges them with
+    // the other models' sessions (all-usage.py).
+    update.command = provider.id === "all"
+      ? ["bash", "-c", "omarchy-agent-usage-update claude codex; python3 \"$1\"; python3 \"$2\"", "bash",
+         agents.localPath("codex-limits.py"), agents.localPath("all-usage.py")]
+      : provider.id === "codex"
       ? ["bash", "-c", "omarchy-agent-usage-update codex; python3 \"$1\"", "bash", agents.localPath("codex-limits.py")]
       : ["omarchy-agent-usage-update", provider.id]
     update.running = true

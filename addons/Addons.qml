@@ -92,13 +92,12 @@ Item {
         }, []))
         .concat([{ rect: true, color: "#a9bcc2", x: 0.5, y: 0.69, width: 0.5, height: 0.09, radius: 0.4 }]),
       description: "Show the layout on the pill when it changes" },
-    // Claude's logo, the default agent's; its Settings pane takes the picked one's.
-    { id: "agents", name: "Agents", icon: "\uec82", color: "#d97757", default: false, source: "agents/AgentsAddon.qml",
-      iconLayers: [{ glyph: "\uec82", color: "#ffffff", x: 0.5, y: 0.5, size: 0.7 }],
-      description: "Claude Code or Codex limits and tokens by day",
+    // All Models' robot; its Settings pane takes the picked agent's logo.
+    { id: "agents", name: "Agents", icon: "󰚩", color: "#5e5ce6", default: false, source: "agents/AgentsAddon.qml",
+      description: "Your coding agents' limits and tokens by day",
       options: [
         { key: "agent", label: "Agent", detail: "Usage read by Omarchy's agent collectors", type: "popup", default: "claude",
-          choices: [{ label: "Claude", value: "claude" }, { label: "Codex", value: "codex" }] }
+          choices: [{ label: "Claude", value: "claude" }, { label: "Codex", value: "codex" }, { label: "All Models", value: "all" }] }
       ] },
     { id: "ask", name: "Ask AI", icon: "󰚩", color: "#000000", default: true, source: "ask/AskAddon.qml",
       // Siri's: a glass sphere on black, with a ribbon of light across it,

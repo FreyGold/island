@@ -104,6 +104,13 @@ ColumnLayout {
   }
   // Tokens by model, all time: the four largest in the agent's colour and
   // then others', the rest as Other, largest first.
+  // All Models (all-usage.py's record): no limits, every model listed.
+  readonly property bool allModels: provider.id === "all"
+  // Every model, largest first: { label, source, value }.
+  readonly property var modelRows: (record && record.models || []).map(function(m) {
+    return { label: m.name || modelName(m.id), source: m.source || "", value: m.tokens || 0 }
+  })
+  readonly property real modelMax: modelRows.length ? modelRows[0].value : 1
   readonly property var models: {
     var usage = record && record.modelUsage || {}
     var rows = Object.keys(usage).map(function(id) {
@@ -175,7 +182,8 @@ ColumnLayout {
       Text {
         width: parent.width
         horizontalAlignment: Text.AlignHCenter
-        text: [page.plan, page.updatedText()].filter(function(t) { return t !== "" }).join(" · ")
+        text: [page.allModels ? (page.record && page.record.sources || []).join(", ") : page.plan, page.updatedText()]
+          .filter(function(t) { return t !== "" }).join(" · ")
         visible: text !== ""
         elide: Text.ElideRight
         color: page.view.textMuted
@@ -196,6 +204,7 @@ ColumnLayout {
   // Usage limits, as Storage's rows: name and share used, a thin meter, and
   // when the window resets -----------------------------------------------------
   SettingsGroup {
+    visible: !page.allModels
     view: page.view
     title: "Usage Limits"
     Repeater {
@@ -528,12 +537,79 @@ ColumnLayout {
   }
 
   // Tokens by model, as Storage's bar: a segment a model, its dot, name, and
-  // total under it ------------------------------------------------------------
+  // total under it; for All Models, a row a model with where it ran, over a
+  // bar scaled to the largest ------------------------------------------------
   SettingsGroup {
-    visible: page.models.length > 0
+    visible: page.allModels ? page.modelRows.length > 0 : page.models.length > 0
     view: page.view
     title: "Tokens by Model"
+    Repeater {
+      model: page.allModels ? page.modelRows.length : 0
+      delegate: Item {
+        id: modelRow
+        required property int index
+        readonly property var modelData: page.modelRows[index] || ({ label: "", source: "", value: 0 })
+        Layout.fillWidth: true
+        implicitHeight: 44
+        Rectangle {
+          anchors.left: parent.left
+          anchors.leftMargin: 6
+          anchors.verticalCenter: parent.verticalCenter
+          width: Math.max(4, (parent.width - 12) * modelRow.modelData.value / page.modelMax)
+          height: parent.height - 8
+          radius: 6
+          color: page.view.host.theme.withAlpha(page.tint, 0.16)
+        }
+        Column {
+          anchors.left: parent.left
+          anchors.leftMargin: 14
+          anchors.right: modelValue.left
+          anchors.rightMargin: 12
+          anchors.verticalCenter: parent.verticalCenter
+          spacing: 1
+          Text {
+            width: parent.width
+            text: modelRow.modelData.label
+            elide: Text.ElideRight
+            color: page.view.text
+            font.family: page.view.host.theme.textFontFamily
+            font.pixelSize: page.view.detailFontSize
+          }
+          Text {
+            width: parent.width
+            visible: text !== ""
+            text: modelRow.modelData.source
+            elide: Text.ElideRight
+            color: page.view.textMuted
+            font.family: page.view.host.theme.textFontFamily
+            font.pixelSize: page.view.detailCaptionFontSize
+          }
+        }
+        Text {
+          id: modelValue
+          anchors.right: parent.right
+          anchors.rightMargin: 14
+          anchors.verticalCenter: parent.verticalCenter
+          text: page.tokens(modelRow.modelData.value)
+          color: page.view.textMuted
+          font.family: page.view.host.theme.textFontFamily
+          font.pixelSize: page.view.detailFontSize
+          font.features: { "tnum": 1 }
+        }
+        Rectangle {
+          visible: modelRow.index < page.modelRows.length - 1
+          anchors.left: parent.left
+          anchors.leftMargin: 14
+          anchors.right: parent.right
+          anchors.rightMargin: 14
+          anchors.bottom: parent.bottom
+          height: 1
+          color: page.view.divider
+        }
+      }
+    }
     Item {
+      visible: !page.allModels
       Layout.fillWidth: true
       implicitHeight: modelBar.implicitHeight + 28
       UsageBar {
