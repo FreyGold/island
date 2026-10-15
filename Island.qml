@@ -357,6 +357,17 @@ Item {
       root.view = "menu"
       return root.view
     }
+    // An addon's pane in Settings (System Stats, Agents); again, while it's
+    // showing, closes Settings (see SettingsView).
+    function addonSettings(id: string): string {
+      var addon = root.addons.root(id)
+      var pages = addon ? addon.settingsPages || [] : []
+      if (!pages.length) return root.view
+      // Already open: SettingsView takes the page itself (or closes).
+      if (root.view === "settings") root.settingsPage = pages[0].title
+      else root.openSettings(pages[0].title)
+      return root.view
+    }
     function toggle(): string { return root.toggleView("controls") }
     function themes(): string { return root.toggleView("themes") }
     function wallpapers(): string { return root.toggleView("wallpapers") }

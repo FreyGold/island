@@ -38,6 +38,8 @@ catalog=(
   'weather|Weather|show weather|||weather'
   'calendar|Calendar|show calendar|||calendar'
   'timer|Timer|show timer|||timer'
+  'stats|System Stats|addonSettings stats|||stats'
+  'agents|Agents|addonSettings agents|||agents'
 )
 
 field() { local IFS='|'; local parts=($1); printf '%s' "${parts[$2]:-}"; }

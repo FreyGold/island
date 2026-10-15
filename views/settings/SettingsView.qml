@@ -90,6 +90,17 @@ Item {
     if (active) Qt.callLater(function() { settingsView.forceActiveFocus() })
     else closePopups()
   }
+  // A pane asked for while Settings is open (an addon's shortcut): go to it,
+  // or close Settings when it's already the one showing.
+  Connections {
+    target: settingsView.host
+    function onSettingsPageChanged() {
+      if (!settingsView.active || settingsView.host.settingsPage === "") return
+      if (settingsView.host.settingsPage === settingsView.currentPage) settingsView.host.view = "rest"
+      else settingsView.currentPage = settingsView.host.settingsPage
+      settingsView.host.settingsPage = ""
+    }
+  }
   onCurrentPageChanged: {
     closePopups()
     scroller.contentY = 0
