@@ -11,7 +11,8 @@ import "../../views/settings/controls"
 // today as Screen Time's weekly chart, with the scale on its right and, while
 // a day is hovered, its total in a tooltip; last, all-time tokens by model as
 // Storage's bar.
-// Limits colour green, yellow, then red.
+// Limits colour green, yellow, then red; a tick on each meter marks how much
+// of its window has gone by.
 ColumnLayout {
   id: page
   required property var view
@@ -61,6 +62,20 @@ ColumnLayout {
     if (/720h|30.?d|month/i.test(label)) return "Monthly Limit"
     return label
   }
+  // How long a limit's window lasts, in ms, or 0 if unknown.
+  function windowLength(label) {
+    if (/5.?h/i.test(label)) return 5 * 3600000
+    if (/week|7.?d/i.test(label)) return 7 * 86400000
+    if (/720h|30.?d|month/i.test(label)) return 30 * 86400000
+    return 0
+  }
+  // The share of a limit's window gone by, or -1 if unknown: the meter's
+  // pace mark, so use ahead of it shows.
+  function elapsed(label, iso) {
+    var length = windowLength(label), left = new Date(iso).getTime() - now
+    if (!length || !isFinite(left)) return -1
+    return Math.max(0, Math.min(1, 1 - left / length))
+  }
   function countdown(iso) {
     var ms = new Date(iso).getTime() - now
     if (!isFinite(ms)) return ""
@@ -90,11 +105,28 @@ ColumnLayout {
   }
   // Round scale figures: "50M", not "50.0M".
   function scaleLabel(n) { return tokens(n).replace(".0", "") }
-  // "YYYY-MM-DD" as a local day.
-  function dayName(date, last) {
+  // "YYYY-MM-DD" as a local day: "Mon", or with `full` "Monday".
+  function dayName(date, last, full) {
     if (last) return "Today"
     var p = String(date).split("-")
-    return Qt.formatDate(new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])), "ddd")
+    return Qt.formatDate(new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2])), full ? "dddd" : "ddd")
+  }
+  // Today against the daily average: "2.6× your daily average",
+  // "42% below your daily average".
+  function vsAverage() {
+    if (!record || average <= 0) return ""
+    var ratio = today / average
+    if (ratio >= 1.95) return ratio.toFixed(1).replace(".0", "") + "× your daily average"
+    var change = Math.round((ratio - 1) * 100)
+    if (change === 0) return "About your daily average"
+    return Math.abs(change) + "% " + (change > 0 ? "above" : "below") + " your daily average"
+  }
+  // The week's busiest day: "Busiest on Thursday".
+  readonly property string busiestText: {
+    if (busiest <= 0 || days.length < 2) return ""
+    for (var i = 0; i < days.length; i++)
+      if ((days[i].messageCount || 0) === busiest) return "Busiest " + (i === days.length - 1 ? "today" : "on " + dayName(days[i].date, false, true))
+    return ""
   }
   function updatedText() {
     if (agents.updating) return "Updating…"
@@ -215,8 +247,9 @@ ColumnLayout {
         required property int index
         readonly property var modelData: page.limits[index] || ({ label: "", percent: 0, resetsAt: "" })
         readonly property real used: Math.max(0, Number(modelData.percent) || 0)
+        readonly property real pace: page.elapsed(modelData.label, modelData.resetsAt)
         Layout.fillWidth: true
-        implicitHeight: limitBody.implicitHeight + 24
+        implicitHeight: limitBody.implicitHeight + 26
         ColumnLayout {
           id: limitBody
           anchors.left: parent.left
@@ -224,9 +257,10 @@ ColumnLayout {
           anchors.verticalCenter: parent.verticalCenter
           anchors.leftMargin: 14
           anchors.rightMargin: 14
-          spacing: 6
+          spacing: 7
           RowLayout {
             Layout.fillWidth: true
+            spacing: 4
             Text {
               Layout.fillWidth: true
               text: page.limitTitle(limit.modelData.label)
@@ -235,25 +269,46 @@ ColumnLayout {
               font.family: page.view.host.theme.textFontFamily
               font.pixelSize: page.view.detailFontSize
             }
+            // The figure stands out; "used" stays quiet beside it.
             Text {
-              text: Math.round(limit.used * 100) + "% used"
-              color: limit.used >= 0.5 ? page.usedColor(limit.used) : page.view.textMuted
+              text: Math.round(limit.used * 100) + "%"
+              color: limit.used >= 0.5 ? page.usedColor(limit.used) : page.view.text
               font.family: page.view.host.theme.textFontFamily
               font.pixelSize: page.view.detailFontSize
+              font.weight: Font.DemiBold
               font.features: { "tnum": 1 }
             }
+            Text {
+              text: "used"
+              color: page.view.textMuted
+              font.family: page.view.host.theme.textFontFamily
+              font.pixelSize: page.view.detailFontSize
+            }
           }
-          Rectangle {
+          Item {
             Layout.fillWidth: true
-            Layout.preferredHeight: 6
-            radius: 3
-            color: page.view.well
+            Layout.preferredHeight: 8
             Rectangle {
-              width: parent.width * Math.min(1, limit.used)
-              Behavior on width { NumberAnimation { duration: 500; easing.type: Easing.OutCubic } }
-              height: parent.height
-              radius: parent.radius
-              color: page.usedColor(limit.used)
+              anchors.fill: parent
+              radius: 4
+              color: page.view.well
+              Rectangle {
+                width: Math.max(limit.used > 0 ? parent.height : 0, parent.width * Math.min(1, limit.used))
+                Behavior on width { NumberAnimation { duration: 500; easing.type: Easing.OutCubic } }
+                height: parent.height
+                radius: parent.radius
+                color: page.usedColor(limit.used)
+              }
+            }
+            // Pace: how much of the window has gone by.
+            Rectangle {
+              visible: limit.pace > 0 && limit.pace < 1
+              x: Math.round(parent.width * limit.pace) - 1
+              anchors.verticalCenter: parent.verticalCenter
+              width: 2
+              height: parent.height + 6
+              radius: 1
+              color: page.view.host.theme.withAlpha(page.view.text, 0.55)
             }
           }
           Text {
@@ -430,6 +485,8 @@ ColumnLayout {
               readonly property bool today: index === page.days.length - 1
               readonly property real count: modelData.messageCount || 0
               x: index * chart.columnWidth
+              // The hovered day's tooltip over its neighbours' bars.
+              z: dayHover.containsMouse ? 2 : 0
               width: chart.columnWidth
               height: chart.height
               // The bar, rounded only on top.
@@ -444,9 +501,10 @@ ColumnLayout {
                   width: parent.width
                   height: parent.height + radius
                   radius: 4
-                  color: page.tint
-                  opacity: chart.hovered === -1 || chart.hovered === day.index ? 1 : 0.4
-                  Behavior on opacity { NumberAnimation { duration: 150 } }
+                  // The others greyed out, as Screen Time does, rather than
+                  // faded to a muddy tint.
+                  color: chart.hovered === -1 || chart.hovered === day.index ? page.tint : page.view.host.theme.withAlpha(page.view.text, 0.22)
+                  Behavior on color { ColorAnimation { duration: 150 } }
                 }
               }
               Text {
@@ -473,8 +531,8 @@ ColumnLayout {
                 anchors.horizontalCenter: parent.horizontalCenter
                 y: Math.max(0, chart.yFor(day.count) - height - 6)
                 z: 2
-                width: hoverText.implicitWidth + 14
-                height: hoverText.implicitHeight + 8
+                width: hoverText.implicitWidth + 16
+                height: hoverText.implicitHeight + 10
                 radius: 6
                 color: page.view.panel
                 border.width: 1
@@ -486,15 +544,25 @@ ColumnLayout {
                   shadowBlur: 0.5
                   shadowVerticalOffset: 2
                 }
-                Text {
+                Column {
                   id: hoverText
                   anchors.centerIn: parent
-                  text: page.tokens(day.count)
-                  color: page.view.text
-                  font.family: page.view.host.theme.textFontFamily
-                  font.pixelSize: page.view.host.theme.px(11)
-                  font.weight: Font.Medium
-                  font.features: { "tnum": 1 }
+                  Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: page.dayName(day.modelData.date, day.today, true)
+                    color: page.view.textMuted
+                    font.family: page.view.host.theme.textFontFamily
+                    font.pixelSize: page.view.host.theme.px(10)
+                  }
+                  Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    text: page.tokens(day.count)
+                    color: page.view.text
+                    font.family: page.view.host.theme.textFontFamily
+                    font.pixelSize: page.view.host.theme.px(12)
+                    font.weight: Font.DemiBold
+                    font.features: { "tnum": 1 }
+                  }
                 }
               }
             }
@@ -514,6 +582,7 @@ ColumnLayout {
     SettingsRow {
       view: page.view
       label: "Today"
+      detail: page.vsAverage()
       Text {
         text: page.tokens(page.today)
         color: page.view.textMuted
@@ -525,6 +594,7 @@ ColumnLayout {
     SettingsRow {
       view: page.view
       label: "Last 7 Days"
+      detail: page.busiestText
       last: true
       Text {
         text: page.tokens(page.week)
