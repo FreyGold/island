@@ -73,6 +73,24 @@ Item {
   IslandSettings { id: islandSettings; home: root.home }
 
   readonly property var clockDate: clock.date
+  // The resting pill's text in the chosen Settings → Clock Format (one of
+  // clockFormats), following the 24-hour and AM/PM switches.
+  readonly property var clockFormats: ["time", "day", "date", "short", "weekday"]
+  readonly property string clockText: formatClock(clockDate, settings.clockFormat)
+  function formatClock(date, format) {
+    var en = Qt.locale("en_US")
+    // Qt only counts hours to 12 when there's an AM/PM marker; iOS drops it.
+    var time = settings.clock24h ? en.toString(date, "HH:mm")
+      : settings.clockAmPm ? en.toString(date, "h:mm AP")
+      : en.toString(date, "h:mm AP").replace(/\s*[AP]M$/i, "")
+    switch (format) {
+    case "day": return en.toString(date, "ddd") + " " + time
+    case "date": return en.toString(date, "d MMM") + " " + time
+    case "short": return en.toString(date, "ddd d MMM") + " " + time
+    case "weekday": return en.toString(date, "dddd") + " " + time
+    default: return time
+    }
+  }
   property string view: "rest"
   // Settings opens on settingsPage (and, on Addons, with settingsAddon's
   // options out) the next time it's shown; both are cleared once taken.
@@ -485,6 +503,9 @@ Item {
           y: root.barHidden && root.view === "rest" ? -height - 12 : root.settings.notch ? 0 : 8
           Behavior on y { MotionAnimation { theme: root.theme; pace: "standard" } }
           readonly property Item activeSurface: views.surfaceFor(root.view)
+          // How much wider than a bare time the chosen clock format is; the
+          // resting pill and the pills that keep the clock in the middle grow by it.
+          readonly property real clockExtra: Math.max(0, Math.ceil(clockMetrics.advanceWidth) + 56 - 100)
           readonly property real targetWidth: activeSurface ? activeSurface.islandWidth
             : root.notificationPill ? 440
             : root.volumePill ? 240
@@ -492,14 +513,14 @@ Item {
             : root.activityPill && root.activities.current.kind === "bluetooth" ? 360
             : root.clipboardPill || root.activityPill ? 320
             : root.workspacesPill ? root.workspaceIds.length * 24 + 42
-            : root.recordingPill ? 240
-            : root.addonPill ? root.addonPill.pillWidth
+            : root.recordingPill ? 240 + clockExtra
+            : root.addonPill ? root.addonPill.pillWidth + (root.view === "feedback" ? 0 : clockExtra)
             : root.view === "feedback" ? 280
             : root.setup.needsSetup ? (root.setup.warning.length > 24 ? 320 : 250)
             : root.downloadDone ? 360
-            : root.downloadActive ? (root.downloads.active ? 240 : 280)
-            : root.mediaPill ? 240
-            : 100
+            : root.downloadActive ? (root.downloads.active ? 240 : 280) + clockExtra
+            : root.mediaPill ? 240 + clockExtra
+            : 100 + clockExtra
           readonly property real targetHeight: activeSurface ? activeSurface.islandHeight
             : root.notificationPill ? 84
             : root.activityPill && root.activities.current.kind === "bluetooth" ? 64
@@ -578,7 +599,8 @@ Item {
 
           DownloadPill { host: root; anchors.fill: parent }
 
-          IslandLabel { host: root; anchors.centerIn: parent }
+          IslandLabel { id: clockLabel; host: root; anchors.centerIn: parent }
+          TextMetrics { id: clockMetrics; font: clockLabel.font; text: root.clockText }
 
           Views { id: views; host: root; anchors.fill: parent }
         }

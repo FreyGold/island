@@ -15,11 +15,34 @@ ColumnLayout {
     title: "Pill"
     SettingsRow {
       view: page.view
+      label: "Clock Format"
+      // Each choice shows the current time in that format.
+      SettingsPopUp {
+        view: page.view
+        options: page.view.host.clockFormats.map(function(format) {
+          return { label: page.view.host.formatClock(page.view.host.clockDate, format), value: format }
+        })
+        value: page.view.settings.clockFormat
+        onPicked: function(v) { page.view.settings.clockFormat = v }
+      }
+    }
+    SettingsRow {
+      view: page.view
       label: "24-Hour Clock"
       SettingsSwitch {
         view: page.view
         checked: page.view.settings.clock24h
         onToggled: function(on) { page.view.settings.clock24h = on }
+      }
+    }
+    SettingsRow {
+      view: page.view
+      label: "Show AM/PM"
+      visible: !page.view.settings.clock24h
+      SettingsSwitch {
+        view: page.view
+        checked: page.view.settings.clockAmPm
+        onToggled: function(on) { page.view.settings.clockAmPm = on }
       }
     }
     SettingsRow {

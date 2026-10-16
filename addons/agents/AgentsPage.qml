@@ -11,8 +11,7 @@ import "../../views/settings/controls"
 // today as Screen Time's weekly chart, with the scale on its right and, while
 // a day is hovered, its total in a tooltip; last, all-time tokens by model as
 // Storage's bar.
-// Limits colour green, yellow, then red; a tick on each meter marks how much
-// of its window has gone by.
+// Limits colour green, yellow, then red.
 ColumnLayout {
   id: page
   required property var view
@@ -61,20 +60,6 @@ ColumnLayout {
     if (/week|7.?d/i.test(label)) return "Weekly Limit"
     if (/720h|30.?d|month/i.test(label)) return "Monthly Limit"
     return label
-  }
-  // How long a limit's window lasts, in ms, or 0 if unknown.
-  function windowLength(label) {
-    if (/5.?h/i.test(label)) return 5 * 3600000
-    if (/week|7.?d/i.test(label)) return 7 * 86400000
-    if (/720h|30.?d|month/i.test(label)) return 30 * 86400000
-    return 0
-  }
-  // The share of a limit's window gone by, or -1 if unknown: the meter's
-  // pace mark, so use ahead of it shows.
-  function elapsed(label, iso) {
-    var length = windowLength(label), left = new Date(iso).getTime() - now
-    if (!length || !isFinite(left)) return -1
-    return Math.max(0, Math.min(1, 1 - left / length))
   }
   function countdown(iso) {
     var ms = new Date(iso).getTime() - now
@@ -142,7 +127,6 @@ ColumnLayout {
   readonly property var modelRows: (record && record.models || []).map(function(m) {
     return { label: m.name || modelName(m.id), source: m.source || "", value: m.tokens || 0 }
   })
-  readonly property real modelMax: modelRows.length ? modelRows[0].value : 1
   readonly property var models: {
     var usage = record && record.modelUsage || {}
     var rows = Object.keys(usage).map(function(id) {
@@ -247,7 +231,6 @@ ColumnLayout {
         required property int index
         readonly property var modelData: page.limits[index] || ({ label: "", percent: 0, resetsAt: "" })
         readonly property real used: Math.max(0, Number(modelData.percent) || 0)
-        readonly property real pace: page.elapsed(modelData.label, modelData.resetsAt)
         Layout.fillWidth: true
         implicitHeight: limitBody.implicitHeight + 26
         ColumnLayout {
@@ -299,16 +282,6 @@ ColumnLayout {
                 radius: parent.radius
                 color: page.usedColor(limit.used)
               }
-            }
-            // Pace: how much of the window has gone by.
-            Rectangle {
-              visible: limit.pace > 0 && limit.pace < 1
-              x: Math.round(parent.width * limit.pace) - 1
-              anchors.verticalCenter: parent.verticalCenter
-              width: 2
-              height: parent.height + 6
-              radius: 1
-              color: page.view.host.theme.withAlpha(page.view.text, 0.55)
             }
           }
           Text {
@@ -607,8 +580,7 @@ ColumnLayout {
   }
 
   // Tokens by model, as Storage's bar: a segment a model, its dot, name, and
-  // total under it; for All Models, a row a model with where it ran, over a
-  // bar scaled to the largest ------------------------------------------------
+  // total under it; for All Models, a row a model with where it ran ------------
   SettingsGroup {
     visible: page.allModels ? page.modelRows.length > 0 : page.models.length > 0
     view: page.view
@@ -621,15 +593,6 @@ ColumnLayout {
         readonly property var modelData: page.modelRows[index] || ({ label: "", source: "", value: 0 })
         Layout.fillWidth: true
         implicitHeight: 44
-        Rectangle {
-          anchors.left: parent.left
-          anchors.leftMargin: 6
-          anchors.verticalCenter: parent.verticalCenter
-          width: Math.max(4, (parent.width - 12) * modelRow.modelData.value / page.modelMax)
-          height: parent.height - 8
-          radius: 6
-          color: page.view.host.theme.withAlpha(page.tint, 0.16)
-        }
         Column {
           anchors.left: parent.left
           anchors.leftMargin: 14
