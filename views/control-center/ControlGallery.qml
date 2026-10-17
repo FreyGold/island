@@ -15,7 +15,7 @@ Rectangle {
   readonly property var layout: controlLayout
   readonly property var sections: [
     { title: "Connectivity", keys: ["wifi", "bluetooth"] },
-    { title: "Focus & System", keys: ["focus", "microphoneMute", "night", "awake", "screensaver", "screenshot", "screenrecord", "game", "power", "keyboard"] },
+    { title: "Focus & System", keys: ["focus", "microphoneMute", "night", "awake", "screensaver", "screenshot", "screenrecord", "dictate", "reminder", "game", "power", "keyboard"] },
     { title: "Sound & Display", keys: ["sound", "microphone", "display"] },
     { title: "Addons", keys: gallery.cc.host.addons.tiles.map(function(tile) { return tile.key }) }
   ]

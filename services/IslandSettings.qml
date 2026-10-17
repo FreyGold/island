@@ -53,6 +53,8 @@ Item {
       property bool screensaverControl: false
       property bool screenshotControl: false
       property bool screenRecordControl: false
+      property bool dictateControl: false
+      property bool reminderControl: false
       // Before Ask AI was an addon; carried over and cleared (see Addons.qml).
       property string askAi: ""
       // Addon id → enabled, and addon id → its options (see addons/Addons.qml).

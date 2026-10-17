@@ -9,8 +9,8 @@ import Quickshell.Services.UPower
 
 // What the control center's controls show and do: network, sound,
 // microphone, Bluetooth, battery and power profile, keyboard layout, Focus,
-// Night Shift, Game Mode, Stay Awake, Screensaver, Screenshot, Screen Recording
-// and brightness, plus which controls are shown and in
+// Night Shift, Game Mode, Stay Awake, Screensaver, Screenshot, Screen Recording,
+// Dictate, reminders and brightness, plus which controls are shown and in
 // what order (saved in the island's settings), enabled addons' tiles among
 // them (see addons/Addon.qml). Nothing here is drawn.
 Item {
@@ -20,7 +20,7 @@ Item {
 
   // --- Which controls, in what order ---
 
-  readonly property var known: ["wifi", "bluetooth", "focus", "game", "night", "power", "keyboard", "sound", "microphone", "microphoneMute", "awake", "screensaver", "screenshot", "screenrecord", "display"]
+  readonly property var known: ["wifi", "bluetooth", "focus", "game", "night", "power", "keyboard", "sound", "microphone", "microphoneMute", "awake", "screensaver", "screenshot", "screenrecord", "dictate", "reminder", "display"]
     .concat(host.addons.tiles.map(function(tile) { return tile.key }))
   readonly property var keys: {
     var known = controls.known
@@ -43,12 +43,12 @@ Item {
   function title(key) {
     var tile = host.addons.tileFor(key)
     if (tile) return String(tile.title || key)
-    var names = { wifi: "Wi-Fi / Ethernet", bluetooth: "Bluetooth", focus: "Focus", game: "Game Mode", night: "Night Shift", power: "Power Mode", keyboard: "Keyboard", awake: "Stay Awake", screensaver: "Screensaver", screenshot: "Screenshot", screenrecord: "Screen Recording", sound: "Sound", microphone: "Microphone", microphoneMute: "Microphone", display: "Display" }
+    var names = { wifi: "Wi-Fi / Ethernet", bluetooth: "Bluetooth", focus: "Focus", game: "Game Mode", night: "Night Shift", power: "Power Mode", keyboard: "Keyboard", awake: "Stay Awake", screensaver: "Screensaver", screenshot: "Screenshot", screenrecord: "Screen Recording", dictate: "Dictate", reminder: "Set Reminder", sound: "Sound", microphone: "Microphone", microphoneMute: "Microphone", display: "Display" }
     return names[key] || key
   }
   // Controls that stay out of the layout until added from the gallery, even
   // for settings saved before they existed.
-  readonly property var optIn: ({ microphoneMute: "microphoneMuteControl", awake: "stayAwakeControl", screensaver: "screensaverControl", screenshot: "screenshotControl", screenrecord: "screenRecordControl" })
+  readonly property var optIn: ({ microphoneMute: "microphoneMuteControl", awake: "stayAwakeControl", screensaver: "screensaverControl", screenshot: "screenshotControl", screenrecord: "screenRecordControl", dictate: "dictateControl", reminder: "reminderControl" })
   function isShown(key) {
     if (optIn[key] && !settings[optIn[key]]) return false
     return String(settings.controlCenterHidden || "").split(",").indexOf(key) === -1
@@ -66,6 +66,8 @@ Item {
     if (!gameModeRead.running) gameModeRead.running = true
     if (!keyboardRead.running) keyboardRead.running = true
     if (!screensaverRead.running) screensaverRead.running = true
+    if (!reminderRead.running) reminderRead.running = true
+    if (!voxtypeCheck.running) voxtypeCheck.running = true
   }
 
   // --- Network ---
@@ -200,6 +202,8 @@ Item {
     if (key === "screensaver") return screensaverOn ? "󱄄" : "󰶐"
     if (key === "screenshot") return "󰹑"
     if (key === "screenrecord") return "󰻃"
+    if (key === "dictate") return dictation === "transcribing" ? "󰔟" : ""
+    if (key === "reminder") return "󰢌"
     if (key === "power") return profileIcons[profileName] || "󰾅"
     if (key === "keyboard") return "󰌌"
     return "󰖔"
@@ -217,6 +221,8 @@ Item {
     if (key === "screensaver") return screensaverOn ? "On" : "Off"
     if (key === "screenshot") return "Region or window"
     if (key === "screenrecord") return recorder.recording ? recorder.timeText(recorder.elapsed) : recorder.active ? "Saving…" : "Off"
+    if (key === "dictate") return !voxtypeInstalled ? "Not installed" : dictation === "recording" ? "Listening…" : dictation === "transcribing" ? "Transcribing…" : "Off"
+    if (key === "reminder") return reminderCount === 0 ? "None set" : reminderCount === 1 ? "1 active" : reminderCount + " active"
     if (key === "power") return profileLabels[profileName] || "Balanced"
     if (key === "keyboard") return keyboardLabel
     return nightOn ? "On" : "Off"
@@ -230,6 +236,8 @@ Item {
     if (key === "awake") return stayAwake
     if (key === "screensaver") return screensaverOn
     if (key === "screenrecord") return recorder.active
+    if (key === "dictate") return dictation !== "idle"
+    if (key === "reminder") return reminderCount > 0
     if (key === "power") return profileName !== "balanced"
     if (key === "keyboard" || key === "screenshot") return false
     return nightOn
@@ -253,6 +261,8 @@ Item {
     else if (key === "screensaver") setScreensaver(!screensaverOn)
     else if (key === "screenshot") takeScreenshot()
     else if (key === "screenrecord") toggleRecording()
+    else if (key === "dictate") toggleDictation()
+    else if (key === "reminder") setReminder()
     else if (key === "power") cycleProfile()
     else if (key === "keyboard") nextKeyboardLayout()
     else if (key === "night" && nightlight) nightlight.setNightlight(!nightOn)
@@ -311,6 +321,65 @@ Item {
       host.menuRoute = "trigger.capture.screenrecord"
       host.view = "menu"
     }
+  }
+
+  // --- Dictate: Omarchy's voxtype dictation, as on Super+Ctrl+X, once the
+  // island has closed so the text lands in the focused window; offers
+  // Omarchy's installer when voxtype isn't there ---
+  property bool voxtypeInstalled: false
+  // "idle", "recording" or "transcribing", followed only while the control
+  // is in the control center.
+  property string dictation: "idle"
+  Process {
+    id: voxtypeCheck
+    command: ["omarchy-cmd-present", "voxtype"]
+    onExited: function(code) { controls.voxtypeInstalled = code === 0 }
+  }
+  Process {
+    command: ["omarchy-voxtype-status"]
+    running: controls.voxtypeInstalled && !!controls.settings.dictateControl
+    onRunningChanged: if (!running) controls.dictation = "idle"
+    stdout: SplitParser {
+      onRead: function(line) {
+        try {
+          var data = JSON.parse(line)
+          var state = String(data.alt || data.class || "idle")
+          controls.dictation = state === "recording" || state === "transcribing" ? state : "idle"
+        } catch (e) {}
+      }
+    }
+  }
+  Timer {
+    id: dictationDelay
+    interval: 300
+    onTriggered: Quickshell.execDetached(["voxtype", "record", "toggle"])
+  }
+  function toggleDictation() {
+    if (!voxtypeInstalled) {
+      host.view = "rest"
+      Quickshell.execDetached(["omarchy-launch-floating-terminal-with-presentation", "omarchy-voxtype-install"])
+      return
+    }
+    host.view = "rest"
+    dictationDelay.restart()
+  }
+
+  // --- Reminders: Omarchy's set-a-reminder flow, as on Super+Ctrl+R, with
+  // how many are pending ---
+  property int reminderCount: 0
+  Process {
+    id: reminderRead
+    command: ["omarchy-reminder", "show", "--json"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        try { controls.reminderCount = Number(JSON.parse(text).count) || 0 } catch (e) {}
+      }
+    }
+  }
+  function setReminder() {
+    host.view = "rest"
+    Quickshell.execDetached(["omarchy-reminder", "-i"])
   }
 
   // --- Brightness (the Display card hides when the output has no control) ---
