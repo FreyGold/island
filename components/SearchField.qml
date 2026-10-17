@@ -36,7 +36,7 @@ Item {
     anchors.rightMargin: field.inset
     anchors.verticalCenter: parent.verticalCenter
     color: field.host.theme.text
-    selectionColor: field.host.theme.withAlpha(field.host.theme.accent, 0.4)
+    selectionColor: field.host.theme.accentFill("ring")
     selectedTextColor: field.host.theme.text
     font.family: field.host.theme.textFontFamily
     font.pixelSize: field.host.theme.px(field.fontSize)

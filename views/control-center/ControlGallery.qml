@@ -34,7 +34,7 @@ Rectangle {
 
   Layout.preferredHeight: panel.implicitHeight + 24
   radius: gallery.cc.cardRadius
-  color: Qt.tint(gallery.cc.host.theme.background, gallery.cc.host.theme.withAlpha(gallery.cc.text, 0.035))
+  color: gallery.cc.host.theme.solid("quiet")
   border.width: 1
   border.color: gallery.cc.edge
 

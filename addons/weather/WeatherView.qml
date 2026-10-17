@@ -13,7 +13,7 @@ Item {
   readonly property var theme: host.theme
   readonly property var now: weather.current
   readonly property bool showing: !!now
-  readonly property color textMuted: theme.withAlpha(theme.text, 0.6)
+  readonly property color textMuted: theme.secondary
 
   // The icon glyph's side bearing and the text's line spacing leave room
   // the padding doesn't see; pulling them in keeps the card's visible

@@ -15,12 +15,12 @@ ColumnLayout {
   readonly property color accent: host.theme.accent
   readonly property color accentInk: host.theme.accentText
   readonly property color text: host.theme.text
-  readonly property color textMuted: Qt.tint(host.theme.background, host.theme.withAlpha(text, 0.6))
-  readonly property color tile: Qt.tint(host.theme.background, host.theme.withAlpha(text, 0.11))
-  readonly property color card: Qt.tint(host.theme.background, host.theme.withAlpha(text, 0.075))
-  readonly property color edge: host.theme.withAlpha(text, 0.08)
-  readonly property color well: Qt.tint(host.theme.background, host.theme.withAlpha(text, 0.16))
-  readonly property color wellHover: Qt.tint(host.theme.background, host.theme.withAlpha(text, 0.22))
+  readonly property color textMuted: host.theme.secondary
+  readonly property color tile: host.theme.tile
+  readonly property color card: host.theme.card
+  readonly property color edge: host.theme.hairline
+  readonly property color well: host.theme.well
+  readonly property color wellHover: host.theme.wellHover
   readonly property string iconFont: host.theme.fontFamily
   // macOS shapes: switches are capsules, cards concentric with the island.
   readonly property real cardRadius: 22

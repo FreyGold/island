@@ -216,9 +216,9 @@ ColumnLayout {
           Rectangle {
             anchors.fill: parent
             radius: controlCard.cornerRadius
-            color: layout.center.host.theme.withAlpha(layout.center.text, 0.03)
+            color: layout.center.host.theme.fill("quiet")
             border.width: 1.5
-            border.color: layout.center.host.theme.withAlpha(layout.center.text, 0.18)
+            border.color: layout.center.host.theme.fill("strong")
             opacity: controlCard.dragged ? 1 : 0
             visible: opacity > 0
             Behavior on opacity { MotionAnimation { theme: layout.center.host.theme; pace: "fade"; curve: "fade" } }

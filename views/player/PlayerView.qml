@@ -76,7 +76,7 @@ Item {
         Layout.preferredWidth: 72
         Layout.preferredHeight: 72
         radius: 16
-        color: player.host.theme.withAlpha(player.host.theme.accent, 0.3)
+        color: player.host.theme.accentFill("medium")
         Image {
           id: cover
           anchors.fill: parent

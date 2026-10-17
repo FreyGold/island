@@ -32,7 +32,22 @@ Item {
   readonly property color accent: Color.accent
   readonly property color accentText: contrastOn(Color.accent)
   readonly property color urgent: Color.urgent
-  readonly property color surface: Qt.tint(background, withAlpha(text, 0.07))
+  readonly property color surface: card
+  // The island's greys: a few text-tint levels every view shares, so a card,
+  // a hover or a divider is the same grey everywhere. `fill()` is see-through
+  // (for hovers and edges laid over anything); `solid()` is that grey on the
+  // black island. Accent tints follow the same idea with `accentFill()`.
+  readonly property var greys: ({ quiet: 0.05, subtle: 0.08, raised: 0.12, strong: 0.16, stronger: 0.22 })
+  readonly property var accentTints: ({ soft: 0.18, medium: 0.3, ring: 0.5 })
+  function fill(level) { return withAlpha(text, greys[level]) }
+  function solid(level) { return Qt.tint(background, fill(level)) }
+  function accentFill(level) { return withAlpha(accent, accentTints[level]) }
+  readonly property color secondary: Qt.tint(background, withAlpha(text, 0.6))
+  readonly property color card: solid("subtle")
+  readonly property color tile: solid("raised")
+  readonly property color well: solid("strong")
+  readonly property color wellHover: solid("stronger")
+  readonly property color hairline: fill("subtle")
   readonly property real motionScale: settings.motionScale > 0 ? settings.motionScale : 1.5
   // Motion roles share one cadence at every user-selected speed. Curves end
   // with a soft landing; geometry stays inside its bounds without bouncing.

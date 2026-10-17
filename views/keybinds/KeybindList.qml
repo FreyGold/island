@@ -108,9 +108,9 @@ ListPicker {
             width: Math.max(26, capLabel.implicitWidth + 14)
             height: 24
             radius: 6
-            color: keybinds.host.theme.withAlpha(keybinds.host.theme.text, 0.08)
+            color: keybinds.host.theme.fill("subtle")
             border.width: 1
-            border.color: keybinds.host.theme.withAlpha(keybinds.host.theme.text, 0.1)
+            border.color: keybinds.host.theme.fill("raised")
             Text {
               id: capLabel
               anchors.centerIn: parent

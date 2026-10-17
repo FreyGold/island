@@ -20,12 +20,12 @@ ColumnLayout {
   readonly property color accent: host.theme.accent
   readonly property color accentInk: host.theme.accentText
   readonly property color text: host.theme.text
-  readonly property color textMuted: Qt.tint(host.theme.background, host.theme.withAlpha(text, 0.6))
-  readonly property color tile: Qt.tint(host.theme.background, host.theme.withAlpha(text, 0.11))
-  readonly property color card: Qt.tint(host.theme.background, host.theme.withAlpha(text, 0.075))
-  readonly property color edge: host.theme.withAlpha(text, 0.05)
-  readonly property color well: Qt.tint(host.theme.background, host.theme.withAlpha(text, 0.16))
-  readonly property color wellHover: Qt.tint(host.theme.background, host.theme.withAlpha(text, 0.22))
+  readonly property color textMuted: host.theme.secondary
+  readonly property color tile: host.theme.tile
+  readonly property color card: host.theme.card
+  readonly property color edge: host.theme.fill("quiet")
+  readonly property color well: host.theme.well
+  readonly property color wellHover: host.theme.wellHover
   readonly property string iconFont: host.theme.fontFamily
 
   readonly property var device: {
@@ -299,7 +299,7 @@ ColumnLayout {
               anchors.bottom: parent.top
               anchors.bottomMargin: 2
               height: 1
-              color: wf.host.theme.withAlpha(wf.text, 0.09)
+              color: wf.host.theme.fill("subtle")
             }
             Text {
               anchors.left: parent.left
@@ -425,7 +425,7 @@ ColumnLayout {
               radius: 7
               color: wf.well
               border.width: 2
-              border.color: wf.host.theme.withAlpha(wf.accent, 0.55)
+              border.color: wf.host.theme.accentFill("ring")
               TextInput {
                 id: password
                 anchors.left: parent.left
@@ -435,7 +435,7 @@ ColumnLayout {
                 anchors.verticalCenter: parent.verticalCenter
                 echoMode: TextInput.Password
                 color: wf.text
-                selectionColor: wf.host.theme.withAlpha(wf.accent, 0.4)
+                selectionColor: wf.host.theme.accentFill("ring")
                 selectedTextColor: wf.text
                 font.family: wf.host.theme.textFontFamily
                 font.pixelSize: wf.host.theme.px(15)
@@ -512,7 +512,7 @@ ColumnLayout {
         Layout.topMargin: 4
         Layout.bottomMargin: 4
         Layout.preferredHeight: 1
-        color: wf.host.theme.withAlpha(wf.text, 0.09)
+        color: wf.host.theme.fill("subtle")
       }
       Rectangle {
         Layout.fillWidth: true

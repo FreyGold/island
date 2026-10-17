@@ -21,7 +21,7 @@ ColumnLayout {
     Layout.fillWidth: true
     Layout.preferredHeight: usage.barHeight
     radius: usage.barRadius
-    color: usage.view.host.theme.withAlpha(usage.view.text, 0.12)
+    color: usage.view.host.theme.fill("raised")
     // The segments, cut to the track's rounded ends.
     Rectangle {
       id: trackMask

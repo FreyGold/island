@@ -37,7 +37,7 @@ Item {
     anchors.verticalCenter: parent.verticalCenter
     height: 5
     radius: height / 2
-    color: Qt.tint("#2a2a2a", osd.host.theme.withAlpha(osd.host.theme.accent, 0.16))
+    color: Qt.tint("#2a2a2a", osd.host.theme.accentFill("soft"))
     Rectangle {
       width: parent.width * osd.level
       height: parent.height

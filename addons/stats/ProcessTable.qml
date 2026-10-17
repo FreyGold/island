@@ -230,8 +230,8 @@ Item {
         anchors.fill: parent
         radius: 6
         color: row.selected ? table.view.accent
-          : rowHover.hovered ? table.view.host.theme.withAlpha(table.view.text, 0.09)
-          : row.index % 2 === 1 ? table.view.host.theme.withAlpha(table.view.text, 0.04) : "transparent"
+          : rowHover.hovered ? table.view.host.theme.fill("subtle")
+          : row.index % 2 === 1 ? table.view.host.theme.fill("quiet") : "transparent"
       }
       MouseArea {
         anchors.fill: parent

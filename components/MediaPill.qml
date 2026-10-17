@@ -20,7 +20,7 @@ Item {
     anchors.leftMargin: 8
     anchors.verticalCenter: parent.verticalCenter
     width: 30; height: 30; radius: 8
-    color: media.host.theme.withAlpha(media.host.theme.accent, 0.3)
+    color: media.host.theme.accentFill("medium")
     Image {
       id: artImage
       anchors.fill: parent

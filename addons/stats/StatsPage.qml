@@ -337,9 +337,9 @@ ColumnLayout {
         width: 150
         height: 24
         radius: 6
-        color: Qt.tint(page.view.panel, page.view.host.theme.withAlpha(page.view.text, filter.activeFocus ? 0.04 : 0.05))
+        color: page.view.host.theme.solid("quiet")
         border.width: 1
-        border.color: page.view.host.theme.withAlpha(page.view.text, filter.activeFocus ? 0.18 : 0.12)
+        border.color: page.view.host.theme.fill(filter.activeFocus ? "strong" : "raised")
         Rectangle {
           anchors.centerIn: parent
           width: parent.width + 6
@@ -347,7 +347,7 @@ ColumnLayout {
           radius: parent.radius + 3
           color: "transparent"
           border.width: 3
-          border.color: page.view.host.theme.withAlpha(page.view.accent, 0.5)
+          border.color: page.view.host.theme.accentFill("ring")
           opacity: filter.activeFocus ? 1 : 0
           scale: filter.activeFocus ? 1 : 1.12
           Behavior on opacity { MotionAnimation { theme: page.view.host.theme; pace: "fade"; curve: "fade" } }

@@ -222,7 +222,7 @@ Item {
           radius: picker.cardRadius
           color: "transparent"
           border.width: 1
-          border.color: picker.host.theme.withAlpha(picker.host.theme.text, 0.06)
+          border.color: picker.host.theme.fill("quiet")
         }
         // Selection ring, set a few pixels outside the card; fades in.
         Rectangle {

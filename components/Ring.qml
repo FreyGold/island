@@ -22,7 +22,7 @@ Item {
     preferredRendererType: Shape.CurveRenderer
     ShapePath {
       fillColor: "transparent"
-      strokeColor: ring.view.host.theme.withAlpha(ring.view.text, 0.1)
+      strokeColor: ring.view.host.theme.fill("raised")
       strokeWidth: ring.thickness
       PathAngleArc {
         centerX: ring.width / 2; centerY: ring.height / 2

@@ -15,8 +15,8 @@ Rectangle {
   radius: 8
   visible: side.view.pageMatches(title)
   // A neutral grey for the open pane, as macOS's sidebar.
-  color: selected ? side.view.host.theme.withAlpha(side.view.text, 0.12)
-    : sideMouse.containsMouse ? side.view.host.theme.withAlpha(side.view.text, 0.06) : "transparent"
+  color: selected ? side.view.host.theme.fill("raised")
+    : sideMouse.containsMouse ? side.view.host.theme.fill("quiet") : "transparent"
   Behavior on color { MotionColorAnimation { theme: side.view.host.theme } }
   scale: sideMouse.pressed ? 0.985 : 1
   Behavior on scale { MotionAnimation { theme: side.view.host.theme; pace: sideMouse.pressed ? "press" : "standard" } }

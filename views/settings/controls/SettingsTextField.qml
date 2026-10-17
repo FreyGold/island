@@ -13,9 +13,9 @@ Rectangle {
   implicitWidth: 200
   implicitHeight: 28
   radius: 6
-  color: Qt.tint(field.view.panel, field.view.host.theme.withAlpha(field.view.text, input.activeFocus ? 0.04 : fieldMouse.containsMouse ? 0.07 : 0.05))
+  color: field.view.host.theme.solid(fieldMouse.containsMouse && !input.activeFocus ? "subtle" : "quiet")
   border.width: 1
-  border.color: field.view.host.theme.withAlpha(field.view.text, input.activeFocus ? 0.18 : 0.12)
+  border.color: field.view.host.theme.fill(input.activeFocus ? "strong" : "raised")
   Behavior on color { MotionColorAnimation { theme: field.view.host.theme } }
   // Focus ring: settles in from slightly larger, like macOS's.
   Rectangle {
@@ -25,7 +25,7 @@ Rectangle {
     radius: parent.radius + 3
     color: "transparent"
     border.width: 3
-    border.color: field.view.host.theme.withAlpha(field.view.accent, 0.5)
+    border.color: field.view.host.theme.accentFill("ring")
     opacity: input.activeFocus ? 1 : 0
     scale: input.activeFocus ? 1 : 1.12
     Behavior on opacity { MotionAnimation { theme: field.view.host.theme; pace: "fade"; curve: "fade" } }

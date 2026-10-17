@@ -59,13 +59,13 @@ Item {
 
   readonly property color panel: host.theme.background
   readonly property color text: host.theme.text
-  readonly property color textMuted: Qt.tint(panel, host.theme.withAlpha(text, 0.6))
-  readonly property color sidebar: Qt.tint(panel, host.theme.withAlpha(text, 0.07))
-  readonly property color card: Qt.tint(panel, host.theme.withAlpha(text, 0.075))
-  readonly property color well: Qt.tint(panel, host.theme.withAlpha(text, 0.16))
-  readonly property color wellHover: Qt.tint(panel, host.theme.withAlpha(text, 0.22))
-  readonly property color divider: host.theme.withAlpha(text, 0.07)
-  readonly property color edge: host.theme.withAlpha(text, 0.07)
+  readonly property color textMuted: host.theme.secondary
+  readonly property color sidebar: host.theme.card
+  readonly property color card: host.theme.card
+  readonly property color well: host.theme.well
+  readonly property color wellHover: host.theme.wellHover
+  readonly property color divider: host.theme.hairline
+  readonly property color edge: host.theme.hairline
   readonly property color accent: host.theme.accent
   readonly property color accentInk: host.theme.accentText
 
@@ -138,9 +138,9 @@ Item {
           Layout.preferredHeight: 28
           Layout.bottomMargin: 10
           radius: height / 2
-          color: settingsView.host.theme.withAlpha(settingsView.text, 0.08)
+          color: settingsView.host.theme.fill("subtle")
           border.width: searchInput.activeFocus ? 2 : 0
-          border.color: settingsView.host.theme.withAlpha(settingsView.accent, 0.6)
+          border.color: settingsView.host.theme.accentFill("ring")
           Text {
             anchors.left: parent.left
             anchors.leftMargin: 10
@@ -317,9 +317,9 @@ Item {
     Behavior on opacity { MotionAnimation { theme: settingsView.host.theme; pace: settingsView.menuButton ? "fade" : "exit"; curve: "fade" } }
     Behavior on scale { MotionAnimation { theme: settingsView.host.theme; pace: settingsView.menuButton ? "standard" : "exit" } }
     radius: 10
-    color: Qt.tint(settingsView.panel, settingsView.host.theme.withAlpha(settingsView.text, 0.13))
+    color: settingsView.host.theme.solid("raised")
     border.width: 1
-    border.color: settingsView.host.theme.withAlpha(settingsView.text, 0.12)
+    border.color: settingsView.host.theme.fill("raised")
     layer.enabled: visible
     layer.effect: MultiEffect {
       shadowEnabled: true
@@ -431,9 +431,9 @@ Item {
     width: 264
     height: fontSearch.height + 10 + Math.max(1, Math.min(9, settingsView.filteredFonts.length)) * fontPanel.rowHeight + 10
     radius: 10
-    color: Qt.tint(settingsView.panel, settingsView.host.theme.withAlpha(settingsView.text, 0.13))
+    color: settingsView.host.theme.solid("raised")
     border.width: 1
-    border.color: settingsView.host.theme.withAlpha(settingsView.text, 0.12)
+    border.color: settingsView.host.theme.fill("raised")
     layer.enabled: visible
     layer.effect: MultiEffect {
       shadowEnabled: true
@@ -449,9 +449,9 @@ Item {
       width: parent.width - 10
       height: Math.max(28, settingsView.detailFontSize + 13)
       radius: 5
-      color: settingsView.host.theme.withAlpha(settingsView.text, 0.08)
+      color: settingsView.host.theme.fill("subtle")
       border.width: fontInput.activeFocus ? 2 : 0
-      border.color: settingsView.host.theme.withAlpha(settingsView.accent, 0.6)
+      border.color: settingsView.host.theme.accentFill("ring")
       Text {
         anchors.left: parent.left
         anchors.leftMargin: 8

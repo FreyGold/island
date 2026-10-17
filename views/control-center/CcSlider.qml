@@ -33,9 +33,9 @@ Item {
     Rectangle {
       anchors.fill: parent
       radius: height / 2
-      color: center.host.theme.withAlpha(center.text, sliderMouse.containsMouse ? 0.22 : 0.17)
+      color: center.host.theme.fill(sliderMouse.containsMouse ? "stronger" : "strong")
       border.width: 1
-      border.color: center.host.theme.withAlpha(center.text, 0.06)
+      border.color: center.host.theme.fill("quiet")
       Behavior on color { MotionColorAnimation { theme: center.host.theme } }
     }
     Rectangle {

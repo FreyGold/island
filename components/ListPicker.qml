@@ -129,7 +129,7 @@ Item {
     anchors.top: search.bottom
     anchors.topMargin: 10
     height: 1
-    color: picker.host.theme.withAlpha(picker.host.theme.text, 0.1)
+    color: picker.host.theme.fill("raised")
   }
 
   // A GridView with one full-width column doubles as the list.

@@ -424,7 +424,7 @@ ColumnLayout {
                 visible: grid.modelData === 0
                 width: chart.plotWidth
                 height: 1
-                color: page.view.host.theme.withAlpha(page.view.text, 0.2)
+                color: page.view.host.theme.fill("stronger")
               }
               Repeater {
                 model: grid.modelData === 0 || page.busiest <= 0 ? 0 : Math.floor(chart.plotWidth / 4)
@@ -433,7 +433,7 @@ ColumnLayout {
                   x: index * 4
                   width: 1.5
                   height: 1
-                  color: page.view.host.theme.withAlpha(page.view.text, 0.16)
+                  color: page.view.host.theme.fill("strong")
                 }
               }
               Text {
@@ -476,7 +476,7 @@ ColumnLayout {
                   radius: 4
                   // The others greyed out, as Screen Time does, rather than
                   // faded to a muddy tint.
-                  color: chart.hovered === -1 || chart.hovered === day.index ? page.tint : page.view.host.theme.withAlpha(page.view.text, 0.22)
+                  color: chart.hovered === -1 || chart.hovered === day.index ? page.tint : page.view.host.theme.fill("stronger")
                   Behavior on color { ColorAnimation { duration: 150 } }
                 }
               }
@@ -509,7 +509,7 @@ ColumnLayout {
                 radius: 6
                 color: page.view.panel
                 border.width: 1
-                border.color: page.view.host.theme.withAlpha(page.view.text, 0.14)
+                border.color: page.view.host.theme.fill("raised")
                 layer.enabled: visible
                 layer.effect: MultiEffect {
                   shadowEnabled: true

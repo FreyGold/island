@@ -11,9 +11,9 @@ Rectangle {
   gradient: flat ? null : widget
   Gradient {
     id: widget
-    GradientStop { position: 0; color: Qt.tint(view.panel, view.host.theme.withAlpha(view.text, 0.11)) }
-    GradientStop { position: 1; color: Qt.tint(view.panel, view.host.theme.withAlpha(view.text, 0.06)) }
+    GradientStop { position: 0; color: view.host.theme.solid("raised") }
+    GradientStop { position: 1; color: view.host.theme.solid("quiet") }
   }
   border.width: 1
-  border.color: flat ? view.edge : view.host.theme.withAlpha(view.text, 0.07)
+  border.color: flat ? view.edge : view.host.theme.fill("subtle")
 }

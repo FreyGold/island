@@ -134,7 +134,7 @@ ColumnLayout {
           anchors.topMargin: 12
           width: 36; height: 36; radius: 9
           color: brand ? brand.tile
-            : noteIcon.status === Image.Ready ? "transparent" : history.center.host.theme.withAlpha(history.center.accent, 0.18)
+            : noteIcon.status === Image.Ready ? "transparent" : history.center.host.theme.accentFill("soft")
           Image {
             id: noteIcon
             anchors.fill: parent
@@ -218,7 +218,7 @@ ColumnLayout {
         Behavior on opacity { MotionAnimation { theme: history.center.host.theme; pace: "fade"; curve: "fade" } }
         color: closeMouse.containsMouse ? history.center.wellHover : history.center.well
         border.width: 1
-        border.color: history.center.host.theme.withAlpha(history.center.text, 0.1)
+        border.color: history.center.host.theme.fill("raised")
         Text {
           anchors.centerIn: parent
           text: "󰅖"

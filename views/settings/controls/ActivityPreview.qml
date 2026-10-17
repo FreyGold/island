@@ -95,7 +95,7 @@ Item {
       width: 28; height: 28
       visible: preview.glyph !== ""
       radius: preview.transfer ? 14 : 7
-      color: preview.kind === "media" ? Qt.tint("#252525", preview.view.host.theme.withAlpha(preview.accent, 0.5)) : "transparent"
+      color: preview.kind === "media" ? Qt.tint("#252525", preview.view.host.theme.accentFill("ring")) : "transparent"
       border.width: preview.transfer ? 2 : 0
       border.color: preview.transfer ? preview.positiveColor : preview.accent
       Text {

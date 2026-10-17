@@ -39,7 +39,7 @@ Item {
     anchors.verticalCenter: parent.verticalCenter
     height: 5
     radius: height / 2
-    color: Qt.tint("#2a2a2a", volume.theme.withAlpha(volume.theme.accent, 0.16))
+    color: Qt.tint("#2a2a2a", volume.theme.accentFill("soft"))
     Rectangle {
       width: parent.width * volume.shownLevel
       height: parent.height

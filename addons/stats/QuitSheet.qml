@@ -59,9 +59,9 @@ Item {
     width: 340
     height: body.implicitHeight + 36
     radius: 14
-    color: Qt.tint(sheet.view.panel, sheet.view.host.theme.withAlpha(sheet.view.text, 0.12))
+    color: sheet.view.host.theme.solid("raised")
     border.width: 1
-    border.color: sheet.view.host.theme.withAlpha(sheet.view.text, 0.1)
+    border.color: sheet.view.host.theme.fill("raised")
     MouseArea { anchors.fill: parent }
 
     ColumnLayout {

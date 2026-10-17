@@ -42,7 +42,7 @@ Item {
     height: 28
     radius: 6
     visible: !shortcutRow.asking
-    color: shortcutRow.recording ? shortcutRow.view.host.theme.withAlpha(shortcutRow.view.accent, 0.16)
+    color: shortcutRow.recording ? shortcutRow.view.host.theme.accentFill("soft")
       : keysMouse.containsMouse && !caps ? shortcutRow.view.well : shortcutRow.view.host.theme.withAlpha(shortcutRow.view.well, 0)
     Behavior on width { MotionAnimation { theme: shortcutRow.view.host.theme; pace: "standard" } }
     Behavior on color { MotionColorAnimation { theme: shortcutRow.view.host.theme } }
@@ -54,7 +54,7 @@ Item {
       radius: parent.radius + 3
       color: "transparent"
       border.width: 3
-      border.color: shortcutRow.view.host.theme.withAlpha(shortcutRow.view.accent, 0.55)
+      border.color: shortcutRow.view.host.theme.accentFill("ring")
       opacity: shortcutRow.recording ? 1 : 0
       scale: shortcutRow.recording ? 1 : 1.12
       Behavior on opacity { MotionAnimation { theme: shortcutRow.view.host.theme; pace: "fade"; curve: "fade" } }
@@ -74,9 +74,9 @@ Item {
           width: Math.max(height, capText.implicitWidth + 12)
           height: 22
           radius: 5
-          color: Qt.tint(shortcutRow.view.panel, shortcutRow.view.host.theme.withAlpha(shortcutRow.view.text, keysMouse.containsMouse ? 0.2 : 0.14))
+          color: shortcutRow.view.host.theme.solid(keysMouse.containsMouse ? "stronger" : "raised")
           border.width: 1
-          border.color: shortcutRow.view.host.theme.withAlpha(shortcutRow.view.text, 0.08)
+          border.color: shortcutRow.view.host.theme.fill("subtle")
           Behavior on color { MotionColorAnimation { theme: shortcutRow.view.host.theme } }
           // The key's lower edge, as a keycap's.
           Rectangle {
