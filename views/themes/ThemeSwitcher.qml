@@ -45,7 +45,7 @@ Picker {
         color: themeCard.entry.foreground || ts.host.theme.text
         font.family: ts.host.theme.textFontFamily
         font.pixelSize: ts.host.theme.px(13)
-        font.weight: Font.DemiBold
+        font.weight: Font.Medium
       }
     }
   }

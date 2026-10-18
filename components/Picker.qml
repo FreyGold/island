@@ -25,16 +25,14 @@ Item {
   property int cardWidth: 196
   property int cardHeight: 102
   property Component card
-  // The selected card grows past full size and the rest shrink back. It's
-  // marked by a ring set just outside the card (macOS picker style); the
-  // strip is padded so the enlarged card and its ring never get clipped.
-  property real selectedScale: 1.05
-  property real restScale: 0.92
+  // Every card is the same size, so the strip's row stays even; the selected
+  // one is marked by a ring set just outside it (macOS picker style), and
+  // the strip is padded so the ring never gets clipped.
   readonly property int cardRadius: 16
   readonly property real ringGap: 4
   readonly property real ringWidth: 2.5
-  readonly property real ringReach: (ringGap + ringWidth) * selectedScale
-  readonly property int pad: Math.ceil(cardWidth * (selectedScale - 1) / 2 + ringReach) + 2
+  readonly property real ringReach: ringGap + ringWidth
+  readonly property int pad: Math.ceil(ringReach) + 2
   // Emitted after the apply command finishes, before the picker closes.
   signal applied(var entry)
 
@@ -170,7 +168,7 @@ Item {
     anchors.right: parent.right
     anchors.top: search.bottom
     anchors.topMargin: 14
-    height: Math.ceil(picker.cardHeight * picker.selectedScale + 2 * picker.ringReach) + 4
+    height: Math.ceil(picker.cardHeight + 2 * picker.ringReach) + 4
     leftMargin: picker.pad
     rightMargin: picker.pad
     orientation: ListView.Horizontal
@@ -191,7 +189,7 @@ Item {
     }
 
     // Each slot spans the strip's full height with the card centered in it,
-    // so the enlarged selected card has room above and below (a horizontal
+    // so the selection ring has room above and below (a horizontal
     // ListView ignores a delegate's own y).
     delegate: Item {
       id: slot
@@ -200,11 +198,8 @@ Item {
       readonly property bool isSelected: ListView.isCurrentItem
       width: picker.cardWidth
       height: carousel.height
-      opacity: isSelected ? 1 : 0.6
-      scale: isSelected ? picker.selectedScale : picker.restScale
+      opacity: isSelected ? 1 : 0.75
       Behavior on opacity { MotionAnimation { theme: picker.host.theme; pace: "expressive" } }
-      // Selection, scrolling and scale share the same soft landing.
-      Behavior on scale { MotionAnimation { theme: picker.host.theme; pace: "expressive" } }
 
       Item {
         anchors.centerIn: parent
