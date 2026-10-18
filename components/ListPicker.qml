@@ -162,29 +162,19 @@ Item {
 
       Rectangle {
         anchors.fill: parent
-        anchors.leftMargin: picker.grid ? 3 : picker.fillSelection ? 0 : 8
+        anchors.leftMargin: picker.grid ? 3 : 0
         anchors.rightMargin: picker.grid ? 3 : 0
         anchors.topMargin: picker.grid ? 3 : 0
         anchors.bottomMargin: picker.grid ? 3 : 0
         radius: 12
         color: !slot.isSelected ? "transparent"
           : picker.fillSelection ? picker.host.theme.accent
-          : picker.grid ? picker.host.theme.withAlpha(picker.host.theme.accent, 0.28)
-          : picker.host.theme.withAlpha(picker.host.theme.text, 0.07)
-      }
-      // Accent bar marking the selected row (list mode).
-      Rectangle {
-        anchors.left: parent.left
-        anchors.verticalCenter: parent.verticalCenter
-        width: 3
-        height: 22
-        radius: 1.5
-        color: picker.host.theme.accent
-        visible: slot.isSelected && !picker.grid && !picker.fillSelection
+          : picker.grid ? picker.host.theme.accentFill("medium")
+          : picker.host.theme.fill("raised")
       }
       Loader {
         anchors.fill: parent
-        anchors.leftMargin: picker.grid ? 0 : picker.fillSelection ? 10 : 16
+        anchors.leftMargin: picker.grid ? 0 : 10
         anchors.rightMargin: picker.grid ? 0 : 12
         sourceComponent: picker.row
         onLoaded: {

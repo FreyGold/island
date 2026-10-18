@@ -52,7 +52,10 @@ ListPicker {
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         width: 36; height: 36; radius: 10
-        color: appRow.isAddon && appRow.entry.tile ? appRow.entry.tile : launcher.host.theme.withAlpha(launcher.host.theme.text, 0.08)
+        // App icons carry their own shape; only glyphs sit on a tile.
+        color: appRow.isAddon && appRow.entry.tile ? appRow.entry.tile
+          : !appRow.isAddon && appIcon.status === Image.Ready ? "transparent"
+          : launcher.host.theme.fill("subtle")
         Text {
           anchors.centerIn: parent
           visible: appRow.isAddon
@@ -64,11 +67,11 @@ ListPicker {
         Image {
           id: appIcon
           anchors.centerIn: parent
-          width: 26; height: 26
+          width: 32; height: 32
           visible: !appRow.isAddon && status === Image.Ready
           source: appRow.isAddon ? "" : launcher.iconSource(appRow.entry && appRow.entry.icon)
-          sourceSize.width: 52
-          sourceSize.height: 52
+          sourceSize.width: 64
+          sourceSize.height: 64
           fillMode: Image.PreserveAspectFit
           asynchronous: true
         }
@@ -92,8 +95,8 @@ ListPicker {
         elide: Text.ElideRight
         color: launcher.host.theme.text
         font.family: launcher.host.theme.textFontFamily
-        font.pixelSize: launcher.host.theme.px(14)
-        font.weight: Font.DemiBold
+        font.pixelSize: launcher.host.theme.px(15)
+        font.weight: Font.Medium
       }
       // An addon's row: its label and detail, muted, on one line
       // ("Ask Claude" and the question).
@@ -109,8 +112,8 @@ ListPicker {
           text: appRow.isAddon ? appRow.entry.label || "" : ""
           color: launcher.host.theme.text
           font.family: launcher.host.theme.textFontFamily
-          font.pixelSize: launcher.host.theme.px(14)
-          font.weight: Font.DemiBold
+          font.pixelSize: launcher.host.theme.px(15)
+          font.weight: Font.Medium
         }
         Text {
           width: parent.width - askLabel.width - parent.spacing
@@ -119,7 +122,7 @@ ListPicker {
           elide: Text.ElideRight
           color: launcher.host.theme.muted
           font.family: launcher.host.theme.textFontFamily
-          font.pixelSize: launcher.host.theme.px(14)
+          font.pixelSize: launcher.host.theme.px(15)
         }
       }
     }

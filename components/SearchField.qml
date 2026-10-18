@@ -24,7 +24,7 @@ Item {
     anchors.leftMargin: field.inset
     anchors.verticalCenter: parent.verticalCenter
     text: "󰍉"
-    color: field.host.theme.muted
+    color: field.host.theme.placeholder
     font.family: field.host.theme.fontFamily
     font.pixelSize: field.host.theme.px(field.iconSize)
   }
@@ -47,7 +47,7 @@ Item {
       verticalAlignment: Text.AlignVCenter
       visible: input.text === ""
       text: field.placeholder
-      color: field.host.theme.muted
+      color: field.host.theme.placeholder
       font: input.font
     }
   }

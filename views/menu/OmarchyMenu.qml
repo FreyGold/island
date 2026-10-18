@@ -279,7 +279,7 @@ ListPicker {
           elide: Text.ElideRight
           color: menu.host.theme.text
           font.family: menu.host.theme.textFontFamily
-          font.pixelSize: menu.host.theme.px(14)
+          font.pixelSize: menu.host.theme.px(15)
           font.weight: Font.Medium
         }
         Text {

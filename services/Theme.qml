@@ -43,6 +43,8 @@ Item {
   function solid(level) { return Qt.tint(background, fill(level)) }
   function accentFill(level) { return withAlpha(accent, accentTints[level]) }
   readonly property color secondary: Qt.tint(background, withAlpha(text, 0.6))
+  // Neutral (not theme-tinted) grey for placeholders and the search glyph.
+  readonly property color placeholder: Qt.tint(background, withAlpha(text, 0.38))
   readonly property color card: solid("subtle")
   readonly property color tile: solid("raised")
   readonly property color well: solid("strong")
