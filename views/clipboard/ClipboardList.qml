@@ -19,7 +19,6 @@ ListPicker {
   visibleRows: 9
   // Room for the image preview even when only a few entries match.
   minRows: 5
-  fillSelection: true
   items: ClipboardHistory.displayRows(history, query, 50)
   onChosen: function(entry) { paste(entry, false) }
   onKeyFilter: function(event) {
@@ -159,7 +158,6 @@ ListPicker {
       property var entry: ({})
       property bool selected: false
       readonly property bool hasPreview: !!entry.previewImage
-      readonly property color ink: selected ? clipboard.host.theme.accentText : clipboard.host.theme.text
 
       // Image thumbnail, or a plain glyph for text / file entries.
       Item {
@@ -186,7 +184,7 @@ ListPicker {
           anchors.centerIn: parent
           visible: !(clipRow.hasPreview && thumb.status === Image.Ready)
           text: clipRow.entry.entryType === "image" ? "󰋩" : clipRow.entry.entryType === "file" ? "󰈔" : "󰆒"
-          color: clipRow.selected ? clipRow.ink : clipboard.host.theme.muted
+          color: clipRow.selected ? clipboard.host.theme.text : clipboard.host.theme.muted
           font.family: clipboard.host.theme.fontFamily
           font.pixelSize: clipboard.host.theme.px(18)
         }
@@ -200,7 +198,7 @@ ListPicker {
         textFormat: Text.PlainText
         elide: Text.ElideRight
         maximumLineCount: 1
-        color: clipRow.ink
+        color: clipboard.host.theme.text
         font.family: clipboard.host.theme.textFontFamily
         font.pixelSize: clipboard.host.theme.px(13)
         font.weight: clipRow.selected ? Font.Medium : Font.Normal

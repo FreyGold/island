@@ -2,8 +2,9 @@ import QtQuick
 import "../../components"
 import QtQuick.Layouts
 
-// A control tile, as macOS's: a capsule with a round badge for the icon at
-// its end, and the title over a status.
+// A control tile, as macOS's: a rounded card (the same corners as the wide
+// cards) with a round badge for the icon at its start, and the title over a
+// status.
 // `center` is the ControlCenter, for its colours.
 Rectangle {
   id: t
@@ -26,7 +27,7 @@ Rectangle {
   Layout.fillWidth: true
   Layout.preferredWidth: 1
   Layout.preferredHeight: center.tileHeight
-  radius: height / 2
+  radius: center.cardRadius
   color: tileMouse.containsMouse ? center.tile : center.card
   border.width: 1
   border.color: center.edge

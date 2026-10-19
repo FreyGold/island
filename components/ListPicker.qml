@@ -34,9 +34,6 @@ Item {
   readonly property int shownRows: Math.max(minRows, Math.min(visibleRows, contentRows))
   property int columns: 1
   readonly property bool grid: columns > 1
-  // Spotlight-style selection: the selected row fills with the theme accent
-  // (rows should switch their text to host.theme.accentText when selected).
-  property bool fillSelection: false
   readonly property string query: search.text
   readonly property var selected: items[list.currentIndex] || null
   signal chosen(var entry)
@@ -168,7 +165,6 @@ Item {
         anchors.bottomMargin: picker.grid ? 3 : 0
         radius: 12
         color: !slot.isSelected ? "transparent"
-          : picker.fillSelection ? picker.host.theme.accent
           : picker.grid ? picker.host.theme.accentFill("medium")
           : picker.host.theme.fill("raised")
       }

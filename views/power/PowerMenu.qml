@@ -122,7 +122,7 @@ Item {
           height: power.tileHeight
           radius: 23
           color: slot.isSelected ? power.host.theme.accent : power.host.theme.fill("raised")
-          scale: tileMouse.pressed ? 0.97 : slot.isSelected ? 1.025 : 1
+          scale: tileMouse.pressed ? 0.97 : 1
           Behavior on color { MotionColorAnimation { theme: power.host.theme } }
           Behavior on scale { MotionAnimation { theme: power.host.theme; pace: tileMouse.pressed ? "press" : "standard" } }
 

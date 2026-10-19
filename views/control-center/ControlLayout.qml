@@ -208,7 +208,7 @@ ColumnLayout {
           width: slot ? slot.width : 0
           height: slot ? slot.height : 0
           readonly property bool dragged: layout.draggedKey === modelData
-          readonly property real cornerRadius: layout.controls.controlWide(modelData) ? layout.center.cardRadius : height / 2
+          readonly property real cornerRadius: layout.center.cardRadius
           Behavior on x { enabled: layout.center.editMode; MotionAnimation { theme: layout.center.host.theme; pace: "standard" } }
           Behavior on y { enabled: layout.center.editMode; MotionAnimation { theme: layout.center.host.theme; pace: "standard" } }
 
@@ -272,7 +272,7 @@ ColumnLayout {
     visible: !layout.center.editMode && layout.visibleControlKeys.length === 0
     Layout.fillWidth: true
     Layout.preferredHeight: layout.center.tileHeight
-    radius: height / 2
+    radius: layout.center.cardRadius
     color: layout.center.card
     border.width: 1
     border.color: layout.center.edge
@@ -307,7 +307,7 @@ ColumnLayout {
     Rectangle {
       id: dragProxy
       visible: layout.draggedKey !== ""
-      radius: layout.draggedKey !== "" && layout.controls.controlWide(layout.draggedKey) ? layout.center.cardRadius : height / 2
+      radius: layout.center.cardRadius
       color: layout.center.card
       scale: 1.05
       layer.enabled: visible

@@ -151,7 +151,7 @@ Rectangle {
                       center: gallery.cc
                       adding: true
                       shown: gallery.layout.draggedKey !== choice.modelData
-                      cornerRadius: choice.wide ? gallery.cc.cardRadius : parent.height / 2
+                      cornerRadius: gallery.cc.cardRadius
                       tip: "Add " + gallery.controls.controlTitle(choice.modelData)
                       onClicked: gallery.controls.setShown(choice.modelData, true)
                     }
