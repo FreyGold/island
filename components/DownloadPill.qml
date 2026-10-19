@@ -181,7 +181,7 @@ Item {
         text: "Open"
         color: pill.activityAccent
         font.family: pill.host.theme.textFontFamily
-        font.pixelSize: pill.host.theme.px(14)
+        font.pixelSize: pill.host.theme.px(13)
         font.weight: Font.Bold
       }
     }

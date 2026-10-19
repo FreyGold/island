@@ -91,7 +91,7 @@ ListPicker {
         elide: Text.ElideRight
         color: keybinds.host.theme.text
         font.family: keybinds.host.theme.textFontFamily
-        font.pixelSize: keybinds.host.theme.px(16)
+        font.pixelSize: keybinds.host.theme.px(15)
         font.weight: Font.Medium
       }
       // Keys as keycaps.

@@ -169,7 +169,7 @@ Item {
       elide: Text.ElideRight
       color: "#ffffff"
       font.family: pill.host.theme.textFontFamily
-      font.pixelSize: pill.host.theme.px(16)
+      font.pixelSize: pill.host.theme.px(15)
       font.weight: Font.Medium
       font.letterSpacing: -0.2
     }
@@ -221,7 +221,7 @@ Item {
       text: pill.deviceBattery
       color: pill.ringColor
       font.family: pill.host.theme.textFontFamily
-      font.pixelSize: pill.host.theme.px(14)
+      font.pixelSize: pill.host.theme.px(13)
       font.weight: Font.DemiBold
       font.features: { "tnum": 1 }
     }

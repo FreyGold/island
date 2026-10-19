@@ -115,7 +115,7 @@ ListPicker {
           elide: Text.ElideRight
           color: plugins.host.theme.text
           font.family: plugins.host.theme.textFontFamily
-          font.pixelSize: plugins.host.theme.px(14)
+          font.pixelSize: plugins.host.theme.px(13)
           font.weight: Font.Medium
         }
         Text {

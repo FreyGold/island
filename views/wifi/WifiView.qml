@@ -260,7 +260,7 @@ ColumnLayout {
         text: !wf.device ? "No Wi-Fi adapter" : !wf.powered ? "Wi-Fi is off" : "Looking for networks…"
         color: wf.textMuted
         font.family: wf.host.theme.textFontFamily
-        font.pixelSize: wf.host.theme.px(14)
+        font.pixelSize: wf.host.theme.px(13)
       }
 
       ListView {
@@ -308,7 +308,7 @@ ColumnLayout {
               text: row.modelData.header || ""
               color: wf.textMuted
               font.family: wf.host.theme.textFontFamily
-              font.pixelSize: wf.host.theme.px(14)
+              font.pixelSize: wf.host.theme.px(13)
               font.weight: Font.DemiBold
             }
             Row {

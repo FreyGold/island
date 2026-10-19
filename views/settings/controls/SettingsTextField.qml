@@ -68,7 +68,7 @@ Rectangle {
     selectionColor: field.view.accent
     selectedTextColor: field.view.accentInk
     font.family: field.view.host.theme.textFontFamily
-    font.pixelSize: field.view.detailFontSize - 1
+    font.pixelSize: field.view.detailFontSize
     onAccepted: { field.commit(); field.view.forceActiveFocus() }
     onActiveFocusChanged: if (!activeFocus) field.commit()
     Keys.onEscapePressed: function(event) {

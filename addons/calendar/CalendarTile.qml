@@ -44,7 +44,7 @@ CcTile {
       text: tile.weekday.slice(0, 3).toUpperCase()
       color: tile.checked ? tile.center.badgeOnInk : tile.center.accent
       font.family: tile.center.host.theme.textFontFamily
-      font.pixelSize: tile.center.host.theme.px(9)
+      font.pixelSize: tile.center.host.theme.px(10)
       font.weight: Font.Bold
       font.letterSpacing: 0.3
     }

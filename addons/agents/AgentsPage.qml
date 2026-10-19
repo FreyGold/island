@@ -382,7 +382,7 @@ ColumnLayout {
             text: page.record ? page.tokens(page.average) : "—"
             color: page.view.text
             font.family: page.view.host.theme.textFontFamily
-            font.pixelSize: page.view.host.theme.px(24)
+            font.pixelSize: page.view.host.theme.px(22)
             font.weight: Font.DemiBold
             font.features: { "tnum": 1 }
           }

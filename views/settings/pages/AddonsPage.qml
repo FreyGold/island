@@ -101,7 +101,7 @@ ColumnLayout {
                 elide: Text.ElideRight
                 color: page.view.text
                 font.family: page.view.host.theme.textFontFamily
-                font.pixelSize: page.view.detailFontSize + 1
+                font.pixelSize: page.view.host.theme.px(15)
                 font.weight: Font.Medium
               }
               Text {
@@ -113,7 +113,7 @@ ColumnLayout {
                 elide: Text.ElideRight
                 color: page.view.textMuted
                 font.family: page.view.host.theme.textFontFamily
-                font.pixelSize: page.view.detailCaptionFontSize + 1
+                font.pixelSize: page.view.detailFontSize
               }
             }
             Row {

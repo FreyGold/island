@@ -144,7 +144,7 @@ Item {
               opacity: slot.isSelected ? 1 : 0.8
               font.family: power.host.theme.textFontFamily
               font.pixelSize: power.host.theme.px(13)
-              font.weight: Font.DemiBold
+              font.weight: Font.Medium
               Behavior on color { MotionColorAnimation { theme: power.host.theme } }
             }
           }

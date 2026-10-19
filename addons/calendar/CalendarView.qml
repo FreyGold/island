@@ -61,7 +61,7 @@ Item {
       text: view.weekdays[view.calendar.selected.getDay()].toUpperCase()
       color: view.accent
       font.family: view.theme.textFontFamily
-      font.pixelSize: view.theme.px(14)
+      font.pixelSize: view.theme.px(13)
       font.weight: Font.Bold
       font.letterSpacing: 0.4
     }
@@ -109,7 +109,7 @@ Item {
               color: Qt.lighter(modelData.color, 1.2)
               font.family: view.theme.textFontFamily
               font.pixelSize: view.theme.px(13)
-              font.weight: Font.DemiBold
+              font.weight: Font.Medium
               font.letterSpacing: -0.1
             }
             Text {
@@ -203,7 +203,7 @@ Item {
         + (view.calendar.shownYear !== view.calendar.today.getFullYear() ? " " + view.calendar.shownYear : "")
       color: view.accent
       font.family: view.theme.textFontFamily
-      font.pixelSize: view.theme.px(14)
+      font.pixelSize: view.theme.px(13)
       font.weight: Font.Bold
       font.letterSpacing: 0.4
     }
@@ -247,7 +247,7 @@ Item {
           text: modelData
           color: index >= 5 ? view.inkMuted : view.ink
           font.family: view.theme.textFontFamily
-          font.pixelSize: view.theme.px(14)
+          font.pixelSize: view.theme.px(13)
           font.weight: Font.Normal
         }
       }
@@ -290,7 +290,7 @@ Item {
             color: day.isToday ? (day.isSelected ? view.theme.accentText : view.accent)
               : day.slot % 7 >= 5 ? view.inkMuted : view.ink
             font.family: view.theme.textFontFamily
-            font.pixelSize: view.theme.px(14)
+            font.pixelSize: view.theme.px(13)
             font.weight: day.isToday ? Font.DemiBold : Font.Normal
             font.features: { "tnum": 1 }
           }

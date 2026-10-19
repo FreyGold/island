@@ -69,9 +69,9 @@ Item {
   readonly property color accent: host.theme.accent
   readonly property color accentInk: host.theme.accentText
 
-  readonly property int detailFontSize: host.theme.px(14)
-  readonly property int detailCaptionFontSize: host.theme.px(12)
-  readonly property int detailTitleFontSize: host.theme.px(19)
+  readonly property int detailFontSize: host.theme.px(13)
+  readonly property int detailCaptionFontSize: host.theme.px(11)
+  readonly property int detailTitleFontSize: host.theme.px(22)
 
   function revealSettingsItem(item) {
     var top = item.mapToItem(groups, 0, 0).y
@@ -469,7 +469,7 @@ Item {
         text: "Search fonts"
         color: settingsView.textMuted
         font.family: settingsView.host.theme.textFontFamily
-        font.pixelSize: settingsView.detailFontSize - 1
+        font.pixelSize: settingsView.detailFontSize
       }
       TextInput {
         id: fontInput
@@ -482,7 +482,7 @@ Item {
         selectionColor: settingsView.accent
         selectedTextColor: settingsView.accentInk
         font.family: settingsView.host.theme.textFontFamily
-        font.pixelSize: settingsView.detailFontSize - 1
+        font.pixelSize: settingsView.detailFontSize
         onTextChanged: { settingsView.fontQuery = text; settingsView.fontCursor = 0 }
         Keys.onDownPressed: function(event) { settingsView.fontCursor = Math.min(settingsView.filteredFonts.length - 1, settingsView.fontCursor + 1); event.accepted = true }
         Keys.onUpPressed: function(event) { settingsView.fontCursor = Math.max(0, settingsView.fontCursor - 1); event.accepted = true }
@@ -553,7 +553,7 @@ Item {
         text: "No fonts match"
         color: settingsView.textMuted
         font.family: settingsView.host.theme.textFontFamily
-        font.pixelSize: settingsView.detailFontSize - 2
+        font.pixelSize: settingsView.host.theme.px(12)
       }
     }
   }

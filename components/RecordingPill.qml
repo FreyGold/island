@@ -38,7 +38,7 @@ Item {
     text: pill.recorder.recording ? pill.recorder.timeText(pill.recorder.elapsed) : "Saving…"
     color: pill.ink
     font.family: pill.host.theme.textFontFamily
-    font.pixelSize: pill.host.theme.px(14)
+    font.pixelSize: pill.host.theme.px(13)
     font.weight: Font.Medium
     font.features: { "tnum": 1, "case": 1 }
     font.letterSpacing: -0.2

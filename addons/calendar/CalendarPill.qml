@@ -117,7 +117,7 @@ Item {
         text: pill.day.getDate()
         color: "#2c2c2e"
         font.family: pill.host.theme.textFontFamily
-        font.pixelSize: pill.host.theme.px(18)
+        font.pixelSize: pill.host.theme.px(17)
         font.weight: Font.Normal
         font.features: { "tnum": 1 }
       }
@@ -144,7 +144,7 @@ Item {
       elide: Text.ElideRight
       color: "#ffffff"
       font.family: pill.host.theme.textFontFamily
-      font.pixelSize: pill.host.theme.px(14)
+      font.pixelSize: pill.host.theme.px(13)
       font.weight: Font.DemiBold
       font.letterSpacing: -0.3
     }

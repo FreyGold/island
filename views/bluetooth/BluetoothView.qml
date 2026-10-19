@@ -251,7 +251,7 @@ ColumnLayout {
         text: !bt.adapter ? "No Bluetooth adapter" : !bt.powered ? "Bluetooth is off" : "Looking for devices…"
         color: bt.textMuted
         font.family: bt.host.theme.textFontFamily
-        font.pixelSize: bt.host.theme.px(14)
+        font.pixelSize: bt.host.theme.px(13)
       }
 
       ListView {
@@ -298,7 +298,7 @@ ColumnLayout {
               text: row.modelData.header || ""
               color: bt.textMuted
               font.family: bt.host.theme.textFontFamily
-              font.pixelSize: bt.host.theme.px(14)
+              font.pixelSize: bt.host.theme.px(13)
               font.weight: Font.DemiBold
             }
             Row {

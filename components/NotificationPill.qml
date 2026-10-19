@@ -104,7 +104,7 @@ Item {
       elide: Text.ElideRight
       color: Qt.rgba(1, 1, 1, 0.72)
       font.family: host.theme.textFontFamily
-      font.pixelSize: host.theme.px(14)
+      font.pixelSize: host.theme.px(13)
       font.letterSpacing: -0.1
     }
   }

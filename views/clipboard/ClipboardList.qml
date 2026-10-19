@@ -202,7 +202,7 @@ ListPicker {
         maximumLineCount: 1
         color: clipRow.ink
         font.family: clipboard.host.theme.textFontFamily
-        font.pixelSize: clipboard.host.theme.px(14)
+        font.pixelSize: clipboard.host.theme.px(13)
         font.weight: clipRow.selected ? Font.Medium : Font.Normal
       }
     }

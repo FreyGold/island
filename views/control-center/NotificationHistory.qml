@@ -23,7 +23,7 @@ ColumnLayout {
       text: "Notifications"
       color: history.center.text
       font.family: history.center.host.theme.textFontFamily
-      font.pixelSize: history.center.host.theme.px(14)
+      font.pixelSize: history.center.host.theme.px(13)
       font.weight: Font.DemiBold
       font.letterSpacing: -0.1
     }

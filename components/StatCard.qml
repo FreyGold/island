@@ -45,7 +45,7 @@ Card {
         elide: Text.ElideRight
         color: card.view.text
         font.family: card.view.host.theme.textFontFamily
-        font.pixelSize: card.view.detailFontSize + 1
+        font.pixelSize: card.view.host.theme.px(15)
         font.weight: Font.DemiBold
       }
       Rectangle {
@@ -100,7 +100,7 @@ Card {
               text: figure.modelData.label
               color: card.flat ? card.view.text : card.view.textMuted
               font.family: card.view.host.theme.textFontFamily
-              font.pixelSize: card.flat ? card.view.detailCaptionFontSize + 1 : card.view.host.theme.px(13)
+              font.pixelSize: card.flat ? card.view.detailFontSize : card.view.host.theme.px(13)
             }
             Text {
               anchors.right: parent.right
@@ -108,7 +108,7 @@ Card {
               text: figure.modelData.value
               color: figure.modelData.color || (card.flat ? card.view.textMuted : card.view.text)
               font.family: card.view.host.theme.textFontFamily
-              font.pixelSize: card.flat ? card.view.detailCaptionFontSize + 1 : card.view.host.theme.px(14)
+              font.pixelSize: card.flat ? card.view.detailFontSize : card.view.host.theme.px(13)
               font.weight: card.flat ? Font.Normal : Font.DemiBold
               font.features: { "tnum": 1 }
             }

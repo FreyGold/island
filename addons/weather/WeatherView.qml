@@ -84,7 +84,7 @@ Item {
           elide: Text.ElideRight
           color: view.ink
           font.family: view.theme.textFontFamily
-          font.pixelSize: view.theme.px(20)
+          font.pixelSize: view.theme.px(22)
           font.weight: Font.Medium
           font.letterSpacing: -0.3
         }
@@ -216,7 +216,7 @@ Item {
         text: notice.needsCity ? "Open Settings" : "Try Again"
         color: view.theme.accentText
         font.family: view.theme.textFontFamily
-        font.pixelSize: view.theme.px(14)
+        font.pixelSize: view.theme.px(13)
         font.weight: Font.Medium
       }
       MouseArea {

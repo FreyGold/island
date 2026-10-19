@@ -176,7 +176,7 @@ Item {
         wrapMode: Text.Wrap
         color: answer.error ? answer.host.theme.urgent : "#ffffff"
         font.family: answer.host.theme.textFontFamily
-        font.pixelSize: answer.host.theme.px(21)
+        font.pixelSize: answer.host.theme.px(22)
         font.letterSpacing: -0.3
         lineHeight: 1.1
       }

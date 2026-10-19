@@ -74,7 +74,7 @@ Card {
             text: reading.modelData.label
             color: card.view.text
             font.family: card.view.host.theme.textFontFamily
-            font.pixelSize: card.view.detailCaptionFontSize + 1
+            font.pixelSize: card.view.detailFontSize
           }
           Row {
             anchors.right: parent.right
@@ -91,7 +91,7 @@ Card {
               text: Math.round(reading.modelData.value) + " °C"
               color: card.view.textMuted
               font.family: card.view.host.theme.textFontFamily
-              font.pixelSize: card.view.detailCaptionFontSize + 1
+              font.pixelSize: card.view.detailFontSize
               font.features: { "tnum": 1 }
             }
           }

@@ -92,7 +92,7 @@ Item {
     height: 40
     inset: 6
     iconSize: 22
-    fontSize: 21
+    fontSize: 22
     placeholder: picker.placeholder
     onKeyPressed: function(event) {
       picker.keyFilter(event)
