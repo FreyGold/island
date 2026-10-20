@@ -61,6 +61,14 @@ Item {
         { rect: true, color: "#3d8bff", x: 0.5, y: 0.518, width: 1, height: 0.025 }
       ]),
       description: "Live CPU, memory, GPU, and disk use" },
+    { id: "displays", name: "Displays", icon: "󰖨", color: "#0a84ff", default: true, source: "displays/DisplaysAddon.qml",
+      // macOS's: a white sun, a disc ringed by eight rounded rays.
+      iconLayers: [{ circle: true, color: "#ffffff", x: 0.5, y: 0.5, size: 0.32 }]
+        .concat([0, 1, 2, 3, 4, 5, 6, 7].map(function(i) {
+          var a = i * Math.PI / 4, c = Math.cos(a), s = Math.sin(a)
+          return { line: [[0.5 + 0.25 * c, 0.5 + 0.25 * s], [0.5 + 0.33 * c, 0.5 + 0.33 * s]], color: "#ffffff", width: 0.075 }
+        })),
+      description: "Arrange your monitors and set their modes" },
     { id: "tray", name: "System Tray", icon: "󰀻", color: "#5e5ce6", default: false, source: "tray/TrayAddon.qml",
       iconLayers: [
         { rect: true, color: "#ffffff", opacity: 0.95, x: 0.5, y: 0.26, width: 0.8, height: 0.14, radius: 0.5 },
@@ -269,11 +277,16 @@ Item {
   }
 
   // The addon whose ongoing activity holds the resting island, if any: the
-  // first in registry order with `ongoing` set.
+  // first in registry order with `ongoing` set, one asking (`pillAsks`)
+  // before the rest.
   readonly property var ongoing: {
-    for (var i = 0; i < loaded.length; i++)
-      if (loaded[i].ongoing && loaded[i].pill) return loaded[i]
-    return null
+    var first = null
+    for (var i = 0; i < loaded.length; i++) {
+      if (!loaded[i].ongoing || !loaded[i].pill) continue
+      if (loaded[i].pillAsks) return loaded[i]
+      if (!first) first = loaded[i]
+    }
+    return first
   }
 
   // Every enabled addon's views, and its control center tiles keyed

@@ -9,6 +9,10 @@ import QtQuick
 //           host.showFeedback("", ms, "addon:" + addon.id), or hold the
 //           resting island with it for as long as `ongoing` is set (over
 //           the media and download pills), the clock kept in its middle.
+//           With `pillAsks` set too, the pill is a question waiting for
+//           an answer (Displays' "Keep these display settings?"): it goes
+//           ahead of the other addons' ongoing pills and fills the island,
+//           the clock hidden.
 //   views   [{ name, width, padding, component }], each opened with
 //           `show <name>`; its item is on screen while host.view is name.
 //           An item with surfaceWidth, surfacePadding, or surfaceRadius
@@ -38,6 +42,7 @@ Item {
 
   property Component pill: null
   property bool ongoing: false
+  property bool pillAsks: false
   readonly property bool pillShown: host.addonPill === addonRoot
   property real pillWidth: 280
   property real pillHeight: host.settings.notch ? 40 : 44

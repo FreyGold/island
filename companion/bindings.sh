@@ -40,6 +40,7 @@ catalog=(
   'timer|Timer|show timer|||timer'
   'stats|System Stats|addonSettings stats|||stats'
   'agents|Agents|addonSettings agents|||agents'
+  'displays|Displays|addonSettings displays|||displays'
 )
 
 field() { local IFS='|'; local parts=($1); printf '%s' "${parts[$2]:-}"; }

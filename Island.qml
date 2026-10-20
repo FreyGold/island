@@ -375,7 +375,7 @@ Item {
       root.view = "menu"
       return root.view
     }
-    // An addon's pane in Settings (System Stats, Agents); again, while it's
+    // An addon's pane in Settings (System Stats, Agents, Displays); again, while it's
     // showing, closes Settings (see SettingsView).
     function addonSettings(id: string): string {
       var addon = root.addons.root(id)
@@ -514,7 +514,7 @@ Item {
             : root.clipboardPill || root.activityPill ? 320
             : root.workspacesPill ? root.workspaceIds.length * 24 + 42
             : root.recordingPill ? 240 + clockExtra
-            : root.addonPill ? root.addonPill.pillWidth + (root.view === "feedback" ? 0 : clockExtra)
+            : root.addonPill ? root.addonPill.pillWidth + (root.view === "feedback" || root.addonPill.pillAsks ? 0 : clockExtra)
             : root.view === "feedback" ? 280
             : root.setup.needsSetup ? (root.setup.warning.length > 24 ? 320 : 250)
             : root.downloadDone ? 360
