@@ -12,7 +12,7 @@ import "../../components"
 Picker {
   id: ws
   cardHeight: 110
-  placeholder: "Search wallpapers…"
+  placeholder: "Search wallpapers"
   emptyText: "No wallpapers match"
   currentKey: currentPath
   applyCommand: function(entry) { return ["omarchy-theme-bg-set", entry.path] }

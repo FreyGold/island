@@ -107,24 +107,52 @@ ListPicker {
         anchors.top: parent.top
         anchors.bottom: parent.bottom
 
-        // The picture, fitted to the pane at its own aspect ratio with
-        // rounded corners.
-        ClippingRectangle {
+        // The picture in a card at the top of the pane, fitted at its own
+        // aspect ratio, with the entry's name under it.
+        Rectangle {
+          id: previewCard
           readonly property real ratio: previewImage.implicitHeight > 0 ? previewImage.implicitWidth / previewImage.implicitHeight : 1
-          anchors.centerIn: parent
-          width: Math.min(parent.width, parent.height * ratio)
-          height: width / ratio
-          radius: 14
-          color: "transparent"
+          readonly property real inner: width - 16
+          anchors.top: parent.top
+          anchors.left: parent.left
+          anchors.right: parent.right
+          height: Math.min(inner / ratio, parent.height - 50) + 16 + 26
+          radius: 16
+          color: clipboard.host.theme.card
+          border.width: 1
+          border.color: clipboard.host.theme.hairline
           visible: preview.isImage && previewImage.status === Image.Ready
-          Image {
-            id: previewImage
-            anchors.fill: parent
-            source: preview.isImage ? "file://" + preview.entry.previewImage : ""
-            sourceSize.width: 640
-            fillMode: Image.PreserveAspectFit
-            asynchronous: true
-            smooth: true
+          ClippingRectangle {
+            anchors.top: parent.top
+            anchors.topMargin: 8
+            anchors.horizontalCenter: parent.horizontalCenter
+            height: Math.min(previewCard.inner / previewCard.ratio, previewCard.parent.height - 50)
+            width: height * previewCard.ratio
+            radius: 10
+            color: "transparent"
+            Image {
+              id: previewImage
+              anchors.fill: parent
+              source: preview.isImage ? "file://" + preview.entry.previewImage : ""
+              sourceSize.width: 640
+              fillMode: Image.PreserveAspectFit
+              asynchronous: true
+              smooth: true
+            }
+          }
+          Text {
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.margins: 10
+            anchors.bottomMargin: 8
+            horizontalAlignment: Text.AlignHCenter
+            text: String(preview.entry.previewText || "").trim()
+            textFormat: Text.PlainText
+            elide: Text.ElideMiddle
+            color: clipboard.host.theme.secondary
+            font.family: clipboard.host.theme.textFontFamily
+            font.pixelSize: clipboard.host.theme.px(11)
           }
         }
         Text {

@@ -86,12 +86,11 @@ Rectangle {
             spacing: 4
             Text {
               Layout.leftMargin: 6
-              text: section.modelData.title.toUpperCase()
+              text: section.modelData.title
               color: gallery.cc.textMuted
               font.family: gallery.cc.host.theme.textFontFamily
-              font.pixelSize: gallery.cc.host.theme.px(10)
+              font.pixelSize: gallery.cc.host.theme.px(12)
               font.weight: Font.DemiBold
-              font.letterSpacing: 0.6
             }
             GridLayout {
               Layout.fillWidth: true

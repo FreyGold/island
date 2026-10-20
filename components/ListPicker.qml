@@ -41,7 +41,7 @@ Item {
   // (e.g. Delete to remove an entry, Shift+Enter for a second action).
   signal keyFilter(var event)
 
-  implicitHeight: search.height + 10 + 1 + 8 + list.height
+  implicitHeight: search.height + 10 + list.height
 
   onActiveChanged: {
     if (!active) return
@@ -86,10 +86,6 @@ Item {
     anchors.left: parent.left
     anchors.right: parent.right
     anchors.top: parent.top
-    height: 40
-    inset: 6
-    iconSize: 22
-    fontSize: 22
     placeholder: picker.placeholder
     onKeyPressed: function(event) {
       picker.keyFilter(event)
@@ -119,24 +115,14 @@ Item {
     }
   }
 
-  Rectangle {
-    id: divider
-    anchors.left: parent.left
-    anchors.right: parent.right
-    anchors.top: search.bottom
-    anchors.topMargin: 10
-    height: 1
-    color: picker.host.theme.fill("raised")
-  }
-
   // A GridView with one full-width column doubles as the list.
   GridView {
     id: list
     anchors.left: parent.left
     anchors.right: picker.showSide ? sidePane.left : parent.right
     anchors.rightMargin: picker.showSide ? 12 : 0
-    anchors.top: divider.bottom
-    anchors.topMargin: 8
+    anchors.top: search.bottom
+    anchors.topMargin: 10
     height: picker.rowHeight * picker.shownRows
     cellWidth: Math.floor(width / picker.columns)
     cellHeight: picker.rowHeight
@@ -144,8 +130,25 @@ Item {
     model: picker.items
     boundsBehavior: Flickable.StopAtBounds
     keyNavigationEnabled: false
-    highlightMoveDuration: 0
     onCurrentIndexChanged: positionViewAtIndex(currentIndex, GridView.Contain)
+
+    // One highlight for the whole list that glides to the selected row,
+    // rather than each row lighting up on its own.
+    highlightFollowsCurrentItem: false
+    highlight: Rectangle {
+      readonly property Item at: list.currentItem
+      readonly property bool atDisabled: !!at && at.itemDisabled
+      visible: !!at && list.count > 0
+      x: at ? at.x + (picker.grid ? 3 : 0) : 0
+      y: at ? at.y + (picker.grid ? 3 : 0) : 0
+      width: list.cellWidth - (picker.grid ? 6 : 0)
+      height: list.cellHeight - (picker.grid ? 6 : 0)
+      radius: 12
+      color: picker.grid ? picker.host.theme.accentFill("medium") : picker.host.theme.fill("raised")
+      opacity: atDisabled ? 0.4 : 1
+      Behavior on x { MotionAnimation { theme: picker.host.theme; pace: "quick" } }
+      Behavior on y { MotionAnimation { theme: picker.host.theme; pace: "quick" } }
+    }
 
     delegate: Item {
       id: slot
@@ -157,17 +160,6 @@ Item {
       height: list.cellHeight
       opacity: slot.itemDisabled ? 0.4 : 1
 
-      Rectangle {
-        anchors.fill: parent
-        anchors.leftMargin: picker.grid ? 3 : 0
-        anchors.rightMargin: picker.grid ? 3 : 0
-        anchors.topMargin: picker.grid ? 3 : 0
-        anchors.bottomMargin: picker.grid ? 3 : 0
-        radius: 12
-        color: !slot.isSelected ? "transparent"
-          : picker.grid ? picker.host.theme.accentFill("medium")
-          : picker.host.theme.fill("raised")
-      }
       Loader {
         anchors.fill: parent
         anchors.leftMargin: picker.grid ? 0 : 10
@@ -182,6 +174,29 @@ Item {
         anchors.fill: parent
         cursorShape: slot.itemDisabled ? Qt.ArrowCursor : Qt.PointingHandCursor
         onClicked: if (!slot.itemDisabled) picker.chosen(slot.modelData)
+      }
+    }
+
+    // Soft edges where the list runs on above or below, as in Settings.
+    Repeater {
+      model: [
+        { top: true, shown: list.contentY - list.originY > 1 },
+        { top: false, shown: list.contentY - list.originY < list.contentHeight - list.height - 1 }
+      ]
+      delegate: Rectangle {
+        required property var modelData
+        parent: list
+        z: 2
+        anchors.left: parent.left
+        anchors.right: parent.right
+        y: modelData.top ? 0 : list.height - height
+        height: 24
+        opacity: modelData.shown ? 1 : 0
+        Behavior on opacity { MotionAnimation { theme: picker.host.theme; pace: "fade"; curve: "fade" } }
+        gradient: Gradient {
+          GradientStop { position: 0; color: modelData.top ? picker.host.theme.background : "transparent" }
+          GradientStop { position: 1; color: modelData.top ? "transparent" : picker.host.theme.background }
+        }
       }
     }
 

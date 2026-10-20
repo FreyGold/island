@@ -126,7 +126,20 @@ Item {
       color: settingsView.sidebar
       border.width: 1
       border.color: settingsView.edge
+      // One highlight for the open pane that glides between the rows.
+      Rectangle {
+        readonly property Item at: sidebarItems.itemAt(settingsView.pages.indexOf(settingsView.currentPage))
+        visible: !!at && at.visible
+        x: sidebarColumn.x + (at ? at.x : 0)
+        y: sidebarColumn.y + (at ? at.y : 0)
+        width: at ? at.width : 0
+        height: at ? at.height : 0
+        radius: 8
+        color: settingsView.host.theme.fill("raised")
+        Behavior on y { MotionAnimation { theme: settingsView.host.theme; pace: "quick" } }
+      }
       ColumnLayout {
+        id: sidebarColumn
         anchors.fill: parent
         anchors.leftMargin: 10
         anchors.rightMargin: 10
@@ -187,6 +200,7 @@ Item {
           }
         }
         Repeater {
+          id: sidebarItems
           model: settingsView.pages
           delegate: SidebarItem {
             view: settingsView

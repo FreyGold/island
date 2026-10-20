@@ -116,7 +116,7 @@ ListPicker {
               anchors.centerIn: parent
               text: String(cap.modelData)
               textFormat: Text.PlainText
-              color: keybinds.host.theme.muted
+              color: keybinds.host.theme.text
               font.family: keybinds.host.theme.textFontFamily
               font.pixelSize: keybinds.host.theme.px(11)
               font.weight: Font.DemiBold

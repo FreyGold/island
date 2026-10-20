@@ -83,6 +83,7 @@ ColumnLayout {
   }
 
   ListView {
+    id: notes
     visible: !history.empty
     Layout.fillWidth: true
     // Out by the × button's overhang, so the banners line up with the cards.
@@ -92,6 +93,28 @@ ColumnLayout {
     spacing: 4
     boundsBehavior: Flickable.StopAtBounds
     model: history.center.host.notifications.history
+    // Soft edges where the list runs on above or below, as in Settings.
+    Repeater {
+      model: [
+        { top: true, shown: notes.contentY - notes.originY > 1 },
+        { top: false, shown: notes.contentY - notes.originY < notes.contentHeight - notes.height - 1 }
+      ]
+      delegate: Rectangle {
+        required property var modelData
+        parent: notes
+        z: 1
+        anchors.left: parent.left
+        anchors.right: parent.right
+        y: modelData.top ? 0 : notes.height - height
+        height: 24
+        opacity: modelData.shown ? 1 : 0
+        Behavior on opacity { MotionAnimation { theme: history.center.host.theme; pace: "fade"; curve: "fade" } }
+        gradient: Gradient {
+          GradientStop { position: 0; color: modelData.top ? history.center.host.theme.background : "transparent" }
+          GradientStop { position: 1; color: modelData.top ? "transparent" : history.center.host.theme.background }
+        }
+      }
+    }
     // Inset by the × button's overhang, which sits on the banner's corner.
     delegate: Item {
       id: note
@@ -133,8 +156,18 @@ ColumnLayout {
           anchors.top: parent.top
           anchors.topMargin: 12
           width: 36; height: 36; radius: 9
-          color: brand ? brand.tile
-            : noteIcon.status === Image.Ready ? "transparent" : history.center.host.theme.accentFill("soft")
+          readonly property bool lettered: !brand && noteIcon.status !== Image.Ready
+          color: brand ? brand.tile : "transparent"
+          // A letter avatar sits on a soft grey tile, as macOS's generic
+          // app icon, rather than a coloured square.
+          Rectangle {
+            anchors.fill: parent
+            visible: avatar.lettered
+            gradient: Gradient {
+              GradientStop { position: 0; color: history.center.host.theme.solid("stronger") }
+              GradientStop { position: 1; color: history.center.host.theme.solid("raised") }
+            }
+          }
           Image {
             id: noteIcon
             anchors.fill: parent
@@ -150,7 +183,7 @@ ColumnLayout {
             anchors.centerIn: parent
             visible: noteIcon.status !== Image.Ready
             text: avatar.brand ? avatar.brand.glyph : note.appName.charAt(0).toUpperCase()
-            color: avatar.brand ? avatar.brand.ink : history.center.accent
+            color: avatar.brand ? avatar.brand.ink : history.center.text
             font.family: avatar.brand ? "JetBrainsMono Nerd Font" : history.center.host.theme.textFontFamily
             font.pixelSize: avatar.brand ? history.center.host.theme.px(20) : history.center.host.theme.px(16)
             font.weight: Font.DemiBold

@@ -20,7 +20,7 @@ Item {
   property var items: []
   property string currentKey: ""
   property var applyCommand: null
-  property string placeholder: "Search…"
+  property string placeholder: "Search"
   property string emptyText: "Nothing matches"
   property int cardWidth: 196
   property int cardHeight: 102

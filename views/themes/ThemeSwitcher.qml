@@ -8,7 +8,7 @@ import "../../components"
 // and palette. Applying runs omarchy-theme-set.
 Picker {
   id: ts
-  placeholder: "Search themes…"
+  placeholder: "Search themes"
   emptyText: "No themes match"
   currentKey: host.theme.name
   applyCommand: function(entry) { return ["omarchy-theme-set", entry.name] }
