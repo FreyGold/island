@@ -76,7 +76,13 @@ Item {
         Layout.preferredWidth: 72
         Layout.preferredHeight: 72
         radius: 16
-        color: player.host.theme.accentFill("medium")
+        color: "transparent"
+        ArtFallback {
+          anchors.fill: parent
+          host: player.host
+          glyphSize: 30
+          visible: cover.status !== Image.Ready
+        }
         Image {
           id: cover
           anchors.fill: parent
@@ -87,14 +93,6 @@ Item {
           asynchronous: true
           cache: false
           visible: status === Image.Ready
-        }
-        Text {
-          anchors.centerIn: parent
-          visible: cover.status !== Image.Ready
-          text: "󰝚"
-          color: player.host.theme.accentText
-          font.family: player.host.theme.fontFamily
-          font.pixelSize: player.host.theme.px(30)
         }
       }
       ColumnLayout {

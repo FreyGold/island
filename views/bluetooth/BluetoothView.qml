@@ -242,16 +242,12 @@ ColumnLayout {
       anchors.margins: 6
       spacing: 0
 
-      Text {
+      EmptyState {
         visible: !bt.displayRows.length
         Layout.fillWidth: true
-        Layout.preferredHeight: 70
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
+        host: bt.host
+        glyph: !bt.adapter || !bt.powered ? "󰂲" : "󰂯"
         text: !bt.adapter ? "No Bluetooth adapter" : !bt.powered ? "Bluetooth is off" : "Looking for devices…"
-        color: bt.textMuted
-        font.family: bt.host.theme.textFontFamily
-        font.pixelSize: bt.host.theme.px(13)
       }
 
       ListView {

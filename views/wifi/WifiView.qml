@@ -251,16 +251,12 @@ ColumnLayout {
       anchors.margins: 6
       spacing: 0
 
-      Text {
+      EmptyState {
         visible: !wf.displayRows.length
         Layout.fillWidth: true
-        Layout.preferredHeight: 70
-        horizontalAlignment: Text.AlignHCenter
-        verticalAlignment: Text.AlignVCenter
+        host: wf.host
+        glyph: !wf.device || !wf.powered ? "󰖪" : "󰤨"
         text: !wf.device ? "No Wi-Fi adapter" : !wf.powered ? "Wi-Fi is off" : "Looking for networks…"
-        color: wf.textMuted
-        font.family: wf.host.theme.textFontFamily
-        font.pixelSize: wf.host.theme.px(13)
       }
 
       ListView {

@@ -1,5 +1,6 @@
 import QtQuick
 import Qt.labs.folderlistmodel
+import QtQuick.Effects
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
@@ -455,6 +456,22 @@ Item {
           }
         }
 
+        // While a view is open the island floats over the windows: a soft,
+        // wide shadow under it (the resting pill stays flat, like hardware).
+        RectangularShadow {
+          x: island.x
+          y: island.y
+          width: island.width
+          height: island.height
+          radius: island.radius
+          offset.y: 14
+          blur: 48
+          spread: -4
+          color: Qt.rgba(0, 0, 0, 0.6)
+          opacity: root.surfaceOpen ? 1 : 0
+          visible: opacity > 0.01
+          Behavior on opacity { MotionAnimation { theme: root.theme; pace: root.surfaceOpen ? "morph" : "exit"; curve: "fade" } }
+        }
 
         Canvas {
           id: leftEar
@@ -603,6 +620,24 @@ Item {
           TextMetrics { id: clockMetrics; font: clockLabel.font; text: root.clockText }
 
           Views { id: views; host: root; anchors.fill: parent }
+        }
+        // A faint light edge around the open island, so its black still
+        // reads against a dark wallpaper.
+        Rectangle {
+          x: island.x
+          y: island.y
+          width: island.width
+          height: island.height
+          scale: island.scale
+          radius: island.radius
+          topLeftRadius: island.topLeftRadius
+          topRightRadius: island.topRightRadius
+          color: "transparent"
+          border.width: 1
+          border.color: root.theme.fill("raised")
+          opacity: root.surfaceOpen ? 1 : 0
+          visible: opacity > 0.01
+          Behavior on opacity { MotionAnimation { theme: root.theme; pace: root.surfaceOpen ? "morph" : "exit"; curve: "fade" } }
         }
       }
     }

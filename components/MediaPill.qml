@@ -20,7 +20,12 @@ Item {
     anchors.leftMargin: 8
     anchors.verticalCenter: parent.verticalCenter
     width: 30; height: 30; radius: 8
-    color: media.host.theme.accentFill("medium")
+    color: "transparent"
+    ArtFallback {
+      anchors.fill: parent
+      host: media.host
+      visible: artImage.status !== Image.Ready
+    }
     Image {
       id: artImage
       anchors.fill: parent
@@ -33,14 +38,6 @@ Item {
       // hold on to a cached copy of one.
       cache: false
       visible: status === Image.Ready
-    }
-    Text {
-      anchors.centerIn: parent
-      visible: artImage.status !== Image.Ready
-      text: "󰝚"
-      color: media.host.theme.accentText
-      font.family: media.host.theme.fontFamily
-      font.pixelSize: media.host.theme.px(14)
     }
   }
 
