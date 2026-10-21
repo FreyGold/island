@@ -19,7 +19,7 @@ Addon {
     title: "Displays",
     source: Qt.resolvedUrl("DisplaysPage.qml"), properties: { displays: displaysAddon },
     about: "Arrange your monitors and set how they look.",
-    search: "displays monitors screens arrangement arrange resolution refresh rate hz scale scaling larger text more space rotation rotate portrait enable disable turn off hdr high dynamic range color colour profile 10-bit night shift hyprland"
+    search: "displays monitors screens arrangement arrange resolution refresh rate hz scale scaling larger text more space rotation rotate portrait enable disable turn off hdr high dynamic range color colour profile 10-bit night shift brightness text size font hyprland"
   }]
 
   // The question, on the resting island in place of the clock.
@@ -35,7 +35,7 @@ Addon {
 
   readonly property bool watching: host.view === "settings"
   // Edits left pending when Settings closed are dropped, as macOS does.
-  onWatchingChanged: if (watching) refresh(true)
+  onWatchingChanged: if (watching) { refresh(true); readBrightness(); readTextSize() }
   // Read once at start too, so a monitor kept in HDR pauses Night Shift
   // (see below) from login on.
   Component.onCompleted: refresh(true)
@@ -479,5 +479,76 @@ Addon {
   }
   function resumeNight() {
     Quickshell.execDetached(["bash", "-c", "[ -e " + nightMark + " ] || exit 0; rm -f " + nightMark + "; omarchy-restart-hyprsunset"])
+  }
+
+  // ---------- Brightness and text size ----------
+
+  // Both set at once, as macOS's sliders, not held for Apply. Brightness is
+  // the picked monitor's, through Omarchy (a backlight, an Apple display,
+  // or DDC/CI), or -1 when it has none to set.
+  property int brightness: -1
+  onSelectedChanged: readBrightness()
+  function readBrightness() {
+    if (!selected) { brightness = -1; return }
+    brightnessRead.command = ["omarchy-brightness-display", "--monitor", selected]
+    brightnessRead.running = true
+  }
+  Process {
+    id: brightnessRead
+    stdout: StdioCollector {
+      onStreamFinished: {
+        var v = parseInt(String(text).trim(), 10)
+        displaysAddon.brightness = isNaN(v) ? -1 : Math.max(1, Math.min(100, v))
+      }
+    }
+    onExited: function(code) { if (code !== 0) displaysAddon.brightness = -1 }
+  }
+  // Set while dragging: the latest value waits for the one before to land.
+  property int brightnessWanted: -1
+  function setBrightness(percent) {
+    brightness = Math.max(1, Math.min(100, Math.round(percent)))
+    brightnessWanted = brightness
+    if (!brightnessWrite.running) writeBrightness()
+  }
+  function writeBrightness() {
+    brightnessWrite.command = ["omarchy-brightness-display", "--no-osd", "--monitor", selected, brightnessWanted + "%"]
+    brightnessWanted = -1
+    brightnessWrite.running = true
+  }
+  Process {
+    id: brightnessWrite
+    onExited: if (displaysAddon.brightnessWanted >= 0) displaysAddon.writeBrightness()
+  }
+
+  // Text size, in px, across the shell, GTK apps, and terminals (Omarchy's
+  // omarchy-display-text-size), snapped to its panel's stops.
+  readonly property var textStops: [9, 10, 11, 12, 14, 16, 20]
+  property int textSize: 12
+  function readTextSize() { textRead.running = true }
+  Process {
+    id: textRead
+    command: ["omarchy-display-text-size"]
+    stdout: StdioCollector {
+      onStreamFinished: {
+        var r = /text size:\s*(\d+)/.exec(text)
+        if (r) displaysAddon.textSize = Number(r[1])
+      }
+    }
+  }
+  property int textWanted: 0
+  function setTextSize(px) {
+    if (px === textSize && !textWrite.running) return
+    textSize = px
+    textWanted = px
+    if (!textWrite.running) writeTextSize()
+  }
+  function writeTextSize() {
+    textWrite.command = ["omarchy-display-text-size", String(textWanted)]
+    textWanted = 0
+    textWrite.running = true
+  }
+  Process {
+    id: textWrite
+    onExited: displaysAddon.textWanted ? displaysAddon.writeTextSize() : displaysAddon.readTextSize()
   }
 }

@@ -5,8 +5,10 @@ import "../../views/settings/controls"
 
 // The Displays pane, as macOS's: the monitors at the top, arranged as
 // they are (drag one to move it, click to pick it), then the picked
-// monitor's scale cards, resolution, refresh rate, rotation, and colour
-// (HDR, profile, 10-bit). Edits stay pending until Apply (see DisplaysAddon).
+// monitor's scale cards, brightness (when it has one), resolution,
+// refresh rate, rotation, and colour (HDR, profile, 10-bit), and the text
+// size everywhere. Edits stay pending until Apply (see DisplaysAddon),
+// except brightness and text size, set at once.
 ColumnLayout {
   id: page
   required property var view
@@ -130,6 +132,46 @@ ColumnLayout {
         options: page.rotations.map(function(label, i) { return { label: label, value: String(i) } })
         value: page.entry ? String(page.entry.transform % 4) : "0"
         onPicked: function(value) { page.displays.setRotation(page.entry.name, Number(value)) }
+      }
+    }
+  }
+
+  // ---------- Brightness and text size, set at once ----------
+  // Text size is for every display, so the group stays for one that's off.
+  SettingsGroup {
+    view: page.view
+    visible: page.displays.draft.length > 0
+    // Brightness only when the monitor's on and its brightness can be set.
+    SettingsRow {
+      view: page.view
+      visible: page.on && page.displays.brightness >= 0
+      label: "Brightness"
+      PaneSlider {
+        view: page.view
+        value: (page.displays.brightness - 1) / 99
+        // sun.min and sun.max, as macOS's.
+        leading: "󰃠"
+        trailing: "󰃠"
+        leadingSize: 10
+        trailingSize: 15
+        onMoved: function(v) { page.displays.setBrightness(1 + v * 99) }
+      }
+    }
+    SettingsRow {
+      view: page.view
+      label: "Text size"
+      last: true
+      PaneSlider {
+        view: page.view
+        readonly property var stopsList: page.displays.textStops
+        stops: stopsList.length
+        live: false
+        value: Math.max(0, stopsList.indexOf(page.displays.textSize)) / (stopsList.length - 1)
+        leading: "A"
+        trailing: "A"
+        leadingSize: 10
+        trailingSize: 16
+        onMoved: function(v) { page.displays.setTextSize(stopsList[Math.round(v * (stopsList.length - 1))]) }
       }
     }
   }
