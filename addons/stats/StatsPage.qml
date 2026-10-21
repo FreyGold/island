@@ -93,6 +93,7 @@ ColumnLayout {
         text: "Loading…"
         color: page.view.textMuted
         font.family: page.view.host.theme.textFontFamily
+        font.features: { "tnum": 1 }
         font.pixelSize: page.view.detailCaptionFontSize
       }
     }
@@ -280,6 +281,7 @@ ColumnLayout {
                 Layout.maximumWidth: implicitWidth
                 color: page.view.text
                 font.family: page.view.host.theme.textFontFamily
+                font.features: { "tnum": 1 }
                 font.pixelSize: page.view.detailFontSize
                 font.weight: Font.Medium
               }
@@ -290,6 +292,7 @@ ColumnLayout {
                 elide: Text.ElideMiddle
                 color: page.view.textMuted
                 font.family: page.view.host.theme.textFontFamily
+                font.features: { "tnum": 1 }
                 font.pixelSize: page.view.detailCaptionFontSize
               }
               Item { visible: volume.modelData.mount === "/"; Layout.fillWidth: true }
@@ -368,6 +371,7 @@ ColumnLayout {
           text: "Search"
           color: page.view.textMuted
           font.family: page.view.host.theme.textFontFamily
+          font.features: { "tnum": 1 }
           font.pixelSize: page.view.host.theme.px(13)
         }
         TextInput {
@@ -380,6 +384,7 @@ ColumnLayout {
           clip: true
           color: page.view.text
           font.family: page.view.host.theme.textFontFamily
+          font.features: { "tnum": 1 }
           font.pixelSize: page.view.host.theme.px(13)
           Keys.onEscapePressed: function(event) {
             if (text !== "") { text = ""; event.accepted = true }

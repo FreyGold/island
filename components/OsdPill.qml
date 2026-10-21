@@ -74,6 +74,7 @@ Item {
     elide: Text.ElideRight
     color: "#ffffff"
     font.family: osd.host.theme.textFontFamily
+    font.features: { "tnum": 1 }
     font.pixelSize: osd.host.theme.px(13)
     font.weight: Font.Medium
   }

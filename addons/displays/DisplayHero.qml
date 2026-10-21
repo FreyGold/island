@@ -20,7 +20,7 @@ Item {
   // With two monitors on or more, they're shown as arranged and dragged
   // into place here (see Arrangement); otherwise side by side.
   readonly property bool arranged: displays.enabledCount >= 2
-  implicitHeight: arranged ? 240 : screens.implicitHeight + 44
+  implicitHeight: arranged ? 240 : screens.implicitHeight + 8
 
   Arrangement {
     visible: hero.arranged

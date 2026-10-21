@@ -76,6 +76,7 @@ Item {
     elide: Text.ElideRight
     color: "#ffffff"
     font.family: pill.host.theme.textFontFamily
+    font.features: { "tnum": 1 }
     font.pixelSize: pill.host.theme.px(13)
     font.weight: Font.Medium
     font.letterSpacing: -0.2
@@ -159,6 +160,7 @@ Item {
       text: pill.activity.status || ""
       color: "#888888"
       font.family: pill.host.theme.textFontFamily
+      font.features: { "tnum": 1 }
       font.pixelSize: pill.host.theme.px(13)
       font.weight: Font.Medium
     }
@@ -169,6 +171,7 @@ Item {
       elide: Text.ElideRight
       color: "#ffffff"
       font.family: pill.host.theme.textFontFamily
+      font.features: { "tnum": 1 }
       font.pixelSize: pill.host.theme.px(15)
       font.weight: Font.Medium
       font.letterSpacing: -0.2

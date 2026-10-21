@@ -164,6 +164,7 @@ Item {
               text: head.modelData.title
               color: head.sorted ? table.view.text : table.view.textMuted
               font.family: table.view.host.theme.textFontFamily
+              font.features: { "tnum": 1 }
               font.pixelSize: table.view.host.theme.px(12)
               font.weight: Font.DemiBold
             }
@@ -266,6 +267,7 @@ Item {
                   text: row.modelData.open ? "▾" : "▸"
                   color: row.inkMuted
                   font.family: table.view.host.theme.textFontFamily
+                  font.features: { "tnum": 1 }
                   font.pixelSize: table.view.host.theme.px(11)
                 }
                 MouseArea {
@@ -304,6 +306,7 @@ Item {
                 elide: Text.ElideRight
                 color: row.ink
                 font.family: table.view.host.theme.textFontFamily
+                font.features: { "tnum": 1 }
                 font.pixelSize: table.view.host.theme.px(13)
                 // The full name, its PID (or its app's processes), and the
                 // command that started it.
@@ -370,6 +373,7 @@ Item {
     text: table.stats.latest ? "No Processes" : "Loading…"
     color: table.view.textMuted
     font.family: table.view.host.theme.textFontFamily
+    font.features: { "tnum": 1 }
     font.pixelSize: table.view.host.theme.px(13)
   }
 }

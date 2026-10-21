@@ -74,6 +74,7 @@ Card {
             text: reading.modelData.label
             color: card.view.text
             font.family: card.view.host.theme.textFontFamily
+            font.features: { "tnum": 1 }
             font.pixelSize: card.view.detailFontSize
           }
           Row {

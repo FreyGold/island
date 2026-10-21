@@ -104,6 +104,7 @@ Item {
           text: ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"][pill.day.getMonth()]
           color: "#ffffff"
           font.family: pill.host.theme.textFontFamily
+          font.features: { "tnum": 1 }
           font.pixelSize: pill.host.theme.px(8)
           font.weight: Font.Bold
           font.letterSpacing: 0.2
@@ -144,6 +145,7 @@ Item {
       elide: Text.ElideRight
       color: "#ffffff"
       font.family: pill.host.theme.textFontFamily
+      font.features: { "tnum": 1 }
       font.pixelSize: pill.host.theme.px(13)
       font.weight: Font.DemiBold
       font.letterSpacing: -0.3

@@ -43,6 +43,7 @@ CcSection {
     text: "No audio output available"
     color: card.center.textMuted
     font.family: card.center.host.theme.textFontFamily
+    font.features: { "tnum": 1 }
     font.pixelSize: card.center.host.theme.px(12)
     Layout.fillWidth: true
   }

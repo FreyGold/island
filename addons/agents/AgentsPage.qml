@@ -191,6 +191,7 @@ ColumnLayout {
         elide: Text.ElideRight
         color: page.view.text
         font.family: page.view.host.theme.textFontFamily
+        font.features: { "tnum": 1 }
         font.pixelSize: page.view.detailTitleFontSize
         font.weight: Font.Bold
         font.letterSpacing: -0.3
@@ -204,6 +205,7 @@ ColumnLayout {
         elide: Text.ElideRight
         color: page.view.textMuted
         font.family: page.view.host.theme.textFontFamily
+        font.features: { "tnum": 1 }
         font.pixelSize: page.view.detailCaptionFontSize
       }
       Item { width: 1; height: 4 }
@@ -250,6 +252,7 @@ ColumnLayout {
               elide: Text.ElideRight
               color: page.view.text
               font.family: page.view.host.theme.textFontFamily
+              font.features: { "tnum": 1 }
               font.pixelSize: page.view.detailFontSize
             }
             // The figure stands out; "used" stays quiet beside it.
@@ -337,6 +340,7 @@ ColumnLayout {
           text: page.record ? "Limits Unavailable" : "Reading Limits…"
           color: page.view.text
           font.family: page.view.host.theme.textFontFamily
+          font.features: { "tnum": 1 }
           font.pixelSize: page.view.detailFontSize
         }
         Text {
@@ -349,6 +353,7 @@ ColumnLayout {
             + "Sign in with <font color=\"" + page.view.text + "\">" + page.provider.login + "</font> to see them."
           color: page.view.textMuted
           font.family: page.view.host.theme.textFontFamily
+          font.features: { "tnum": 1 }
           font.pixelSize: page.view.detailCaptionFontSize
         }
       }
@@ -376,6 +381,7 @@ ColumnLayout {
             text: "Daily Average"
             color: page.view.textMuted
             font.family: page.view.host.theme.textFontFamily
+            font.features: { "tnum": 1 }
             font.pixelSize: page.view.detailCaptionFontSize
           }
           Text {
@@ -393,7 +399,7 @@ ColumnLayout {
         Item {
           id: chart
           Layout.fillWidth: true
-          Layout.preferredHeight: 150
+          Layout.preferredHeight: 130
           readonly property real axisWidth: 44
           readonly property real plotWidth: width - axisWidth
           readonly property real plotHeight: height - 22
@@ -410,6 +416,7 @@ ColumnLayout {
             text: "No usage in the last 7 days"
             color: page.view.textMuted
             font.family: page.view.host.theme.textFontFamily
+            font.features: { "tnum": 1 }
             font.pixelSize: page.view.detailCaptionFontSize
           }
 
@@ -486,6 +493,7 @@ ColumnLayout {
                 text: page.dayName(day.modelData.date, day.today)
                 color: day.today ? page.view.text : page.view.textMuted
                 font.family: page.view.host.theme.textFontFamily
+                font.features: { "tnum": 1 }
                 font.pixelSize: page.view.host.theme.px(11)
                 font.weight: day.today ? Font.DemiBold : Font.Normal
               }
@@ -525,6 +533,7 @@ ColumnLayout {
                     text: page.dayName(day.modelData.date, day.today, true)
                     color: page.view.textMuted
                     font.family: page.view.host.theme.textFontFamily
+                    font.features: { "tnum": 1 }
                     font.pixelSize: page.view.host.theme.px(10)
                   }
                   Text {
@@ -606,6 +615,7 @@ ColumnLayout {
             elide: Text.ElideRight
             color: page.view.text
             font.family: page.view.host.theme.textFontFamily
+            font.features: { "tnum": 1 }
             font.pixelSize: page.view.detailFontSize
           }
           Text {
@@ -615,6 +625,7 @@ ColumnLayout {
             elide: Text.ElideRight
             color: page.view.textMuted
             font.family: page.view.host.theme.textFontFamily
+            font.features: { "tnum": 1 }
             font.pixelSize: page.view.detailCaptionFontSize
           }
         }

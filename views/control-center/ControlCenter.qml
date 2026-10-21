@@ -74,6 +74,7 @@ ColumnLayout {
       text: cc.editMode ? "Edit Controls" : Qt.locale("en_US").toString(cc.host.clockDate, "ddd, MMM d")
       color: cc.text
       font.family: cc.host.theme.textFontFamily
+      font.features: { "tnum": 1 }
       font.pixelSize: cc.host.theme.px(15)
       font.weight: Font.DemiBold
       font.letterSpacing: -0.2

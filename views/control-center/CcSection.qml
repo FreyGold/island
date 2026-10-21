@@ -31,6 +31,7 @@ Rectangle {
     text: sec.title
     color: center.text
     font.family: center.host.theme.textFontFamily
+    font.features: { "tnum": 1 }
     font.pixelSize: center.host.theme.px(13)
     font.weight: Font.DemiBold
     font.letterSpacing: -0.1

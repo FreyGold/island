@@ -149,6 +149,7 @@ Item {
         elide: Text.ElideMiddle
         color: "#ffffff"
         font.family: pill.host.theme.textFontFamily
+        font.features: { "tnum": 1 }
         font.pixelSize: pill.host.theme.px(15)
         font.weight: Font.DemiBold
         font.letterSpacing: -0.2
@@ -161,6 +162,7 @@ Item {
         elide: Text.ElideRight
         color: Qt.rgba(1, 1, 1, 0.55)
         font.family: pill.host.theme.textFontFamily
+        font.features: { "tnum": 1 }
         font.pixelSize: pill.host.theme.px(12)
       }
     }
@@ -181,6 +183,7 @@ Item {
         text: "Open"
         color: pill.activityAccent
         font.family: pill.host.theme.textFontFamily
+        font.features: { "tnum": 1 }
         font.pixelSize: pill.host.theme.px(13)
         font.weight: Font.Bold
       }

@@ -45,6 +45,7 @@ Card {
         elide: Text.ElideRight
         color: card.view.text
         font.family: card.view.host.theme.textFontFamily
+        font.features: { "tnum": 1 }
         font.pixelSize: card.view.host.theme.px(15)
         font.weight: Font.DemiBold
       }
@@ -60,6 +61,7 @@ Card {
           text: card.status
           color: card.statusColor
           font.family: card.view.host.theme.textFontFamily
+          font.features: { "tnum": 1 }
           font.pixelSize: card.view.host.theme.px(12)
           font.weight: Font.DemiBold
         }
@@ -100,6 +102,7 @@ Card {
               text: figure.modelData.label
               color: card.flat ? card.view.text : card.view.textMuted
               font.family: card.view.host.theme.textFontFamily
+              font.features: { "tnum": 1 }
               font.pixelSize: card.flat ? card.view.detailFontSize : card.view.host.theme.px(13)
             }
             Text {

@@ -33,9 +33,10 @@ Item {
   Keys.onEscapePressed: host.view = "rest"
 
   function degrees(value) { return Math.round(value) + "°" }
-  // 17 → "17", or "5PM" without the 24-hour clock, as Apple writes them.
+  // 17 → "17:00", or "5PM" without the 24-hour clock; a bare "17" read like
+  // the temperature under it.
   function hourText(hour) {
-    if (host.settings.clock24h) return (hour < 10 ? "0" : "") + hour
+    if (host.settings.clock24h) return (hour < 10 ? "0" : "") + hour + ":00"
     return ((hour + 11) % 12 + 1) + (hour < 12 ? "AM" : "PM")
   }
   // A chance of rain under this (%) isn't shown.
@@ -84,6 +85,7 @@ Item {
           elide: Text.ElideRight
           color: view.ink
           font.family: view.theme.textFontFamily
+          font.features: { "tnum": 1 }
           font.pixelSize: view.theme.px(22)
           font.weight: Font.Medium
           font.letterSpacing: -0.3
@@ -95,6 +97,7 @@ Item {
           elide: Text.ElideRight
           color: view.inkMuted
           font.family: view.theme.textFontFamily
+          font.features: { "tnum": 1 }
           font.pixelSize: view.theme.px(15)
           font.weight: Font.Normal
         }
@@ -107,6 +110,7 @@ Item {
         text: view.now ? view.degrees(view.now.temperature) : ""
         color: view.ink
         font.family: view.theme.textFontFamily
+        font.features: { "tnum": 1 }
         font.pixelSize: view.theme.px(46)
         font.weight: Font.Light
         font.letterSpacing: -1
@@ -131,6 +135,7 @@ Item {
             text: modelData.now ? "Now" : view.hourText(modelData.hour)
             color: view.inkMuted
             font.family: view.theme.textFontFamily
+            font.features: { "tnum": 1 }
             font.pixelSize: view.theme.px(13)
             font.weight: Font.Medium
           }
@@ -155,6 +160,7 @@ Item {
               text: modelData.rain + "%"
               color: "#5ac8fa"
               font.family: view.theme.textFontFamily
+              font.features: { "tnum": 1 }
               font.pixelSize: view.theme.px(10)
               font.weight: Font.Bold
             }
@@ -164,6 +170,7 @@ Item {
             text: Math.round(modelData.temperature)
             color: view.ink
             font.family: view.theme.textFontFamily
+            font.features: { "tnum": 1 }
             font.pixelSize: view.theme.px(15)
             font.weight: Font.Medium
             Text {
@@ -198,6 +205,7 @@ Item {
         : "Couldn't reach Open-Meteo"
       color: notice.status === "loading" ? view.textMuted : view.theme.text
       font.family: view.theme.textFontFamily
+      font.features: { "tnum": 1 }
       font.pixelSize: view.theme.px(15)
     }
     Rectangle {
@@ -216,6 +224,7 @@ Item {
         text: notice.needsCity ? "Open Settings" : "Try Again"
         color: view.theme.accentText
         font.family: view.theme.textFontFamily
+        font.features: { "tnum": 1 }
         font.pixelSize: view.theme.px(13)
         font.weight: Font.Medium
       }

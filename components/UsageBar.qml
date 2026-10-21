@@ -77,6 +77,7 @@ ColumnLayout {
           text: parent.modelData.label
           color: usage.view.text
           font.family: usage.view.host.theme.textFontFamily
+          font.features: { "tnum": 1 }
           font.pixelSize: usage.view.detailCaptionFontSize
         }
         Text {
@@ -84,6 +85,7 @@ ColumnLayout {
           text: parent.modelData.text || ""
           color: usage.view.textMuted
           font.family: usage.view.host.theme.textFontFamily
+          font.features: { "tnum": 1 }
           font.pixelSize: usage.view.detailCaptionFontSize
         }
       }
