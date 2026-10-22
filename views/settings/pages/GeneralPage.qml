@@ -60,6 +60,52 @@ ColumnLayout {
 
   SettingsGroup {
     view: page.view
+    title: "Auto-Hide"
+    SettingsRow {
+      view: page.view
+      label: "Hide on Fullscreen"
+      detail: "Automatically hide the island when a window is fullscreen"
+      SettingsSwitch {
+        view: page.view
+        checked: page.view.settings.autoHideFullscreen
+        onToggled: function(on) { page.view.settings.autoHideFullscreen = on }
+      }
+    }
+    SettingsRow {
+      view: page.view
+      label: "Hide on Screensaver"
+      detail: "Hide the island when Omarchy's screensaver is active"
+      SettingsSwitch {
+        view: page.view
+        checked: page.view.settings.autoHideScreensaver
+        onToggled: function(on) { page.view.settings.autoHideScreensaver = on }
+      }
+    }
+    SettingsRow {
+      view: page.view
+      label: "Hide on Tiling"
+      detail: "Hide the island when tiled windows are present on the workspace"
+      SettingsSwitch {
+        view: page.view
+        checked: page.view.settings.autoHideTiling
+        onToggled: function(on) { page.view.settings.autoHideTiling = on }
+      }
+    }
+    SettingsRow {
+      view: page.view
+      label: "Reveal on Hover"
+      detail: "Slide the island down when hovering near the top edge"
+      last: true
+      SettingsSwitch {
+        view: page.view
+        checked: page.view.settings.autoHideRevealOnHover
+        onToggled: function(on) { page.view.settings.autoHideRevealOnHover = on }
+      }
+    }
+  }
+
+  SettingsGroup {
+    view: page.view
     title: "Appearance"
     SettingsRow {
       view: page.view
