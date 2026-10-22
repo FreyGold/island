@@ -182,6 +182,43 @@ Item {
   readonly property int barSize: 0
   readonly property string position: "top"
 
+  Connections {
+    target: Hyprland
+    function onRawEvent(event) {
+      var n = String((event && event.name) || "")
+      if (["fullscreen", "changefloatingmode", "openwindow", "closewindow", "movewindow", "movewindowv2", "workspace", "workspacev2", "focusedmon", "focusedmonv2", "activewindow", "activewindowv2"].indexOf(n) >= 0) {
+        Hyprland.refreshWorkspaces()
+        Hyprland.refreshToplevels()
+        hyprRefreshTimer.restart()
+      }
+    }
+    function onFocusedWorkspaceChanged() {
+      Hyprland.refreshWorkspaces()
+      Hyprland.refreshToplevels()
+      hyprRefreshTimer.restart()
+    }
+    function onFocusedMonitorChanged() {
+      Hyprland.refreshMonitors()
+      Hyprland.refreshWorkspaces()
+      Hyprland.refreshToplevels()
+      hyprRefreshTimer.restart()
+    }
+    function onActiveToplevelChanged() {
+      Hyprland.refreshToplevels()
+      hyprRefreshTimer.restart()
+    }
+  }
+
+  Timer {
+    id: hyprRefreshTimer
+    interval: 60
+    repeat: false
+    onTriggered: {
+      Hyprland.refreshWorkspaces()
+      Hyprland.refreshToplevels()
+    }
+  }
+
   function surfaceOpenFor(v) { return surfaceNames.indexOf(v) !== -1 }
 
   onViewChanged: {
@@ -223,7 +260,12 @@ Item {
   onVolumeChanged: volumeFeedback()
   onMutedChanged: volumeFeedback()
   onSinkReadyChanged: volumeFeedback()
-  Component.onCompleted: initialized = true
+  Component.onCompleted: {
+    initialized = true
+    Hyprland.refreshMonitors()
+    Hyprland.refreshWorkspaces()
+    Hyprland.refreshToplevels()
+  }
 
   // The media service handles the media keys and summons the stock OSD, which
   // is off, so the island watches every player instead: the one that paused,
@@ -439,12 +481,83 @@ Item {
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.keyboardFocus: island.activeSurface && island.activeSurface.wantsKeyboard
           ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+
+        readonly property var monitor: Hyprland.monitorFor(screen)
+        readonly property var activeWorkspace: (monitor && monitor.activeWorkspace) ? monitor.activeWorkspace : Hyprland.focusedWorkspace
+
+        readonly property bool hasFullscreen: {
+          var ws = activeWorkspace
+          if (!ws) return false
+          if (ws.hasFullscreen) return true
+          var tl = ws.toplevels ? ws.toplevels.values : []
+          for (var i = 0; i < tl.length; i++) {
+            var ipc = tl[i].lastIpcObject
+            if (ipc && (ipc.fullscreen > 0 || ipc.fullscreenClient > 0)) return true
+          }
+          return false
+        }
+
+        readonly property bool hasScreensaver: {
+          var ws = activeWorkspace
+          var tl = ws && ws.toplevels ? ws.toplevels.values : []
+          for (var i = 0; i < tl.length; i++) {
+            var ipc = tl[i].lastIpcObject
+            if (ipc && (ipc.class === "org.omarchy.screensaver" || ipc.initialClass === "org.omarchy.screensaver")) return true
+          }
+          var all = Hyprland.toplevels ? Hyprland.toplevels.values : []
+          for (var j = 0; j < all.length; j++) {
+            var ipca = all[j].lastIpcObject
+            if (ipca && (ipca.class === "org.omarchy.screensaver" || ipca.initialClass === "org.omarchy.screensaver")) return true
+          }
+          return false
+        }
+
+        readonly property bool hasTiled: {
+          var ws = activeWorkspace
+          if (!ws || !ws.toplevels) return false
+          var tl = ws.toplevels.values
+          for (var i = 0; i < tl.length; i++) {
+            var t = tl[i]
+            var ipc = t.lastIpcObject
+            if (ipc) {
+              if (ipc.mapped !== false && !ipc.hidden && !ipc.floating && ipc.class !== "org.omarchy.screensaver") {
+                return true
+              }
+            } else if (t.floating === false) {
+              return true
+            }
+          }
+          return false
+        }
+
+        readonly property bool autoHideCondition: (
+          (root.settings.autoHideFullscreen && hasFullscreen) ||
+          (root.settings.autoHideScreensaver && hasScreensaver) ||
+          (root.settings.autoHideTiling && hasTiled)
+        )
+
+        property bool edgeRevealed: false
+        Timer {
+          id: edgeLeaveTimer
+          interval: 400
+          onTriggered: window.edgeRevealed = false
+        }
+
+        readonly property bool isEffectivelyHidden: (root.barHidden || autoHideCondition)
+          && (root.view === "rest" || (hasScreensaver && root.settings.autoHideScreensaver))
+
+        readonly property bool islandHidden: isEffectivelyHidden
+          && !(root.settings.autoHideRevealOnHover && edgeRevealed && !hasScreensaver)
+
         // Only the island takes input, except while a view is open: then the
-        // whole screen does, so outsideArea can close it. The island holds the
-        // keyboard exclusively then, and Hyprland sends no pointer input to
-        // any other surface, so a focus grab or a separate layer never sees
-        // the click. The click that closes the view goes no further.
-        mask: Region { item: root.closesOnOutsideClick ? outsideArea : island }
+        // whole screen does, so outsideArea can close it. When hidden, only
+        // revealStrip takes hover input at the edge to slide it back down.
+        mask: Region {
+          item: root.closesOnOutsideClick ? outsideArea : (window.islandHidden && !window.edgeRevealed ? null : island)
+          regions: [
+            Region { item: (root.settings.autoHideRevealOnHover && window.islandHidden && !window.hasScreensaver) ? revealStrip : null }
+          ]
+        }
         MouseArea {
           id: outsideArea
           anchors.fill: parent
@@ -453,6 +566,27 @@ Item {
           // Clicks on the island's blank space fall through to here too.
           onPressed: function(mouse) {
             if (!island.contains(mapToItem(island, mouse.x, mouse.y))) root.view = "rest"
+          }
+        }
+
+        Item {
+          id: revealStrip
+          anchors.top: parent.top
+          anchors.horizontalCenter: parent.horizontalCenter
+          width: Math.max(island.width + 80, 260)
+          height: (root.settings.autoHideRevealOnHover && window.islandHidden && !window.hasScreensaver) ? 4 : 0
+          visible: height > 0
+
+          HoverHandler {
+            id: revealHover
+            onHoveredChanged: {
+              if (hovered) {
+                edgeLeaveTimer.stop()
+                window.edgeRevealed = true
+              } else {
+                if (!islandPointerHover.hovered) edgeLeaveTimer.restart()
+              }
+            }
           }
         }
 
@@ -476,7 +610,7 @@ Item {
         Canvas {
           id: leftEar
           readonly property real r: 10
-          visible: root.settings.notch
+          visible: root.settings.notch && island.y > -r
           x: island.x - r
           y: island.y
           width: r
@@ -496,7 +630,7 @@ Item {
         Canvas {
           id: rightEar
           readonly property real r: 10
-          visible: root.settings.notch
+          visible: root.settings.notch && island.y > -r
           x: island.x + island.width
           y: island.y
           width: r
@@ -517,7 +651,7 @@ Item {
         Rectangle {
           id: island
           x: (parent.width - width) / 2
-          y: root.barHidden && root.view === "rest" ? -height - 12 : root.settings.notch ? 0 : 8
+          y: window.islandHidden ? -height - 20 : root.settings.notch ? 0 : 8
           Behavior on y { MotionAnimation { theme: root.theme; pace: "standard" } }
           readonly property Item activeSurface: views.surfaceFor(root.view)
           // How much wider than a bare time the chosen clock format is; the
@@ -560,6 +694,16 @@ Item {
           scale: root.view === "rest" && clockHover.hovered && root.settings.hoverLift && !root.settings.notch ? 1.018 : 1
           Behavior on scale { MotionAnimation { theme: root.theme; pace: "quick" } }
           HoverHandler { id: clockHover; enabled: root.view === "rest" }
+          HoverHandler {
+            id: islandPointerHover
+            onHoveredChanged: {
+              if (hovered) {
+                edgeLeaveTimer.stop()
+              } else {
+                if (window.edgeRevealed && !revealHover.hovered) edgeLeaveTimer.restart()
+              }
+            }
+          }
           color: root.theme.background
           clip: true
           // Width, height and corners travel together and settle softly.
