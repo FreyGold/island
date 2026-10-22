@@ -182,41 +182,27 @@ Item {
   readonly property int barSize: 0
   readonly property string position: "top"
 
+  // Auto-hide. The screensaver and fullscreen come live from Wayland and
+  // Quickshell's own tracking; only "floating" lives in Hyprland's client
+  // list, which Quickshell refetches on request. So while Hide on Tiling is
+  // on, a burst of window events asks for it once.
+  readonly property bool screensaverActive: ToplevelManager.toplevels.values
+    .some(function(t) { return t.appId === "org.omarchy.screensaver" })
+  readonly property bool autoHideTiling: settings.autoHideTiling
+  onAutoHideTilingChanged: if (autoHideTiling) tilingRefreshTimer.restart()
   Connections {
     target: Hyprland
+    enabled: root.autoHideTiling
     function onRawEvent(event) {
       var n = String((event && event.name) || "")
-      if (["fullscreen", "changefloatingmode", "openwindow", "closewindow", "movewindow", "movewindowv2", "workspace", "workspacev2", "focusedmon", "focusedmonv2", "activewindow", "activewindowv2"].indexOf(n) >= 0) {
-        Hyprland.refreshWorkspaces()
-        Hyprland.refreshToplevels()
-        hyprRefreshTimer.restart()
-      }
-    }
-    function onFocusedWorkspaceChanged() {
-      Hyprland.refreshWorkspaces()
-      Hyprland.refreshToplevels()
-      hyprRefreshTimer.restart()
-    }
-    function onFocusedMonitorChanged() {
-      Hyprland.refreshMonitors()
-      Hyprland.refreshWorkspaces()
-      Hyprland.refreshToplevels()
-      hyprRefreshTimer.restart()
-    }
-    function onActiveToplevelChanged() {
-      Hyprland.refreshToplevels()
-      hyprRefreshTimer.restart()
+      if (["changefloatingmode", "openwindow", "closewindow", "movewindowv2"].indexOf(n) >= 0)
+        tilingRefreshTimer.restart()
     }
   }
-
   Timer {
-    id: hyprRefreshTimer
+    id: tilingRefreshTimer
     interval: 60
-    repeat: false
-    onTriggered: {
-      Hyprland.refreshWorkspaces()
-      Hyprland.refreshToplevels()
-    }
+    onTriggered: Hyprland.refreshToplevels()
   }
 
   function surfaceOpenFor(v) { return surfaceNames.indexOf(v) !== -1 }
@@ -262,9 +248,7 @@ Item {
   onSinkReadyChanged: volumeFeedback()
   Component.onCompleted: {
     initialized = true
-    Hyprland.refreshMonitors()
-    Hyprland.refreshWorkspaces()
-    Hyprland.refreshToplevels()
+    if (autoHideTiling) tilingRefreshTimer.restart()
   }
 
   // The media service handles the media keys and summons the stock OSD, which
@@ -489,50 +473,26 @@ Item {
           var ws = activeWorkspace
           if (!ws) return false
           if (ws.hasFullscreen) return true
-          var tl = ws.toplevels ? ws.toplevels.values : []
-          for (var i = 0; i < tl.length; i++) {
-            var ipc = tl[i].lastIpcObject
-            if (ipc && (ipc.fullscreen > 0 || ipc.fullscreenClient > 0)) return true
-          }
+          var tl = ws.toplevels.values
+          for (var i = 0; i < tl.length; i++)
+            if (tl[i].wayland && tl[i].wayland.fullscreen) return true
           return false
         }
-
-        readonly property bool hasScreensaver: {
-          var ws = activeWorkspace
-          var tl = ws && ws.toplevels ? ws.toplevels.values : []
-          for (var i = 0; i < tl.length; i++) {
-            var ipc = tl[i].lastIpcObject
-            if (ipc && (ipc.class === "org.omarchy.screensaver" || ipc.initialClass === "org.omarchy.screensaver")) return true
-          }
-          var all = Hyprland.toplevels ? Hyprland.toplevels.values : []
-          for (var j = 0; j < all.length; j++) {
-            var ipca = all[j].lastIpcObject
-            if (ipca && (ipca.class === "org.omarchy.screensaver" || ipca.initialClass === "org.omarchy.screensaver")) return true
-          }
-          return false
-        }
+        readonly property bool hasScreensaver: root.screensaverActive
 
         readonly property bool hasTiled: {
           var ws = activeWorkspace
-          if (!ws || !ws.toplevels) return false
-          var tl = ws.toplevels.values
+          var tl = ws ? ws.toplevels.values : []
           for (var i = 0; i < tl.length; i++) {
-            var t = tl[i]
-            var ipc = t.lastIpcObject
-            if (ipc) {
-              if (ipc.mapped !== false && !ipc.hidden && !ipc.floating && ipc.class !== "org.omarchy.screensaver") {
-                return true
-              }
-            } else if (t.floating === false) {
-              return true
-            }
+            var ipc = tl[i].lastIpcObject
+            if (ipc && ipc.mapped !== false && !ipc.hidden && !ipc.floating) return true
           }
           return false
         }
 
         readonly property bool autoHideCondition: (
           (root.settings.autoHideFullscreen && hasFullscreen) ||
-          (root.settings.autoHideScreensaver && hasScreensaver) ||
+          hasScreensaver ||
           (root.settings.autoHideTiling && hasTiled)
         )
 
@@ -544,18 +504,21 @@ Item {
         }
 
         readonly property bool isEffectivelyHidden: (root.barHidden || autoHideCondition)
-          && (root.view === "rest" || (hasScreensaver && root.settings.autoHideScreensaver))
+          && (root.view === "rest" || hasScreensaver)
+
+        // Hover at the top edge can bring a hidden island back.
+        readonly property bool revealArmed: isEffectivelyHidden && !hasScreensaver
 
         readonly property bool islandHidden: isEffectivelyHidden
-          && !(root.settings.autoHideRevealOnHover && edgeRevealed && !hasScreensaver)
+          && !(revealArmed && edgeRevealed)
 
         // Only the island takes input, except while a view is open: then the
-        // whole screen does, so outsideArea can close it. When hidden, only
-        // revealStrip takes hover input at the edge to slide it back down.
+        // whole screen does, so outsideArea can close it. While the island can
+        // auto-hide, revealStrip takes hover input at the edge to slide it back.
         mask: Region {
-          item: root.closesOnOutsideClick ? outsideArea : (window.islandHidden && !window.edgeRevealed ? null : island)
+          item: root.closesOnOutsideClick ? outsideArea : window.islandHidden ? null : island
           regions: [
-            Region { item: (root.settings.autoHideRevealOnHover && window.islandHidden && !window.hasScreensaver) ? revealStrip : null }
+            Region { item: window.revealArmed ? revealStrip : null }
           ]
         }
         MouseArea {
@@ -574,7 +537,10 @@ Item {
           anchors.top: parent.top
           anchors.horizontalCenter: parent.horizontalCenter
           width: Math.max(island.width + 80, 260)
-          height: (root.settings.autoHideRevealOnHover && window.islandHidden && !window.hasScreensaver) ? 4 : 0
+          // Once revealed it reaches down past the island, so the gap above
+          // the floating pill still counts as hovering and doesn't hide it.
+          height: !window.revealArmed ? 0
+            : window.edgeRevealed ? (root.settings.notch ? 0 : 8) + island.height : 4
           visible: height > 0
 
           HoverHandler {

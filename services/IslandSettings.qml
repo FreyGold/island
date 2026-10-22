@@ -55,10 +55,8 @@ Item {
       property bool screenRecordControl: false
       property bool dictateControl: false
       property bool reminderControl: false
-      property bool autoHideFullscreen: true
-      property bool autoHideScreensaver: true
-      property bool autoHideTiling: true
-      property bool autoHideRevealOnHover: true
+      property bool autoHideFullscreen: false
+      property bool autoHideTiling: false
       // Before Ask AI was an addon; carried over and cleared (see Addons.qml).
       property string askAi: ""
       // Addon id → enabled, and addon id → its options (see addons/Addons.qml).

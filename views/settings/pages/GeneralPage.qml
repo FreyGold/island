@@ -49,18 +49,12 @@ ColumnLayout {
       view: page.view
       label: "Notch Style"
       detail: "Attach the island to the top edge, like a MacBook notch"
-      last: true
       SettingsSwitch {
         view: page.view
         checked: page.view.settings.notch
         onToggled: function(on) { page.view.settings.notch = on }
       }
     }
-  }
-
-  SettingsGroup {
-    view: page.view
-    title: "Auto-Hide"
     SettingsRow {
       view: page.view
       label: "Hide on Fullscreen"
@@ -73,33 +67,13 @@ ColumnLayout {
     }
     SettingsRow {
       view: page.view
-      label: "Hide on Screensaver"
-      detail: "Hide the island when Omarchy's screensaver is active"
-      SettingsSwitch {
-        view: page.view
-        checked: page.view.settings.autoHideScreensaver
-        onToggled: function(on) { page.view.settings.autoHideScreensaver = on }
-      }
-    }
-    SettingsRow {
-      view: page.view
       label: "Hide on Tiling"
       detail: "Hide the island when tiled windows are present on the workspace"
+      last: true
       SettingsSwitch {
         view: page.view
         checked: page.view.settings.autoHideTiling
         onToggled: function(on) { page.view.settings.autoHideTiling = on }
-      }
-    }
-    SettingsRow {
-      view: page.view
-      label: "Reveal on Hover"
-      detail: "Slide the island down when hovering near the top edge"
-      last: true
-      SettingsSwitch {
-        view: page.view
-        checked: page.view.settings.autoHideRevealOnHover
-        onToggled: function(on) { page.view.settings.autoHideRevealOnHover = on }
       }
     }
   }
