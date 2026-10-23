@@ -1,7 +1,7 @@
 import QtQuick
 import ".."
 
-// Ask AI: text typed in the launcher can be sent to Claude or Codex (the
+// Ask AI: text typed in the launcher can be sent to Claude, Codex, or Gemini (the
 // Ask row, see launcherRow), answered Siri-style in the island (see
 // AnswerView) through the command-line tool you're signed in to.
 Addon {
@@ -16,7 +16,9 @@ Addon {
 
   readonly property var providers: ({
     claude: { name: "Claude", cli: "claude", glyph: "", tile: "#d97757", ink: "#ffffff" },
-    codex: { name: "Codex", cli: "codex", glyph: "", tile: "#f2f2f2", ink: "#000000" }
+    codex: { name: "Codex", cli: "codex", glyph: "", tile: "#f2f2f2", ink: "#000000" },
+    gemini: { name: "Gemini", cli: "agy", glyph: "✦", tile: "#1a73e8", ink: "#ffffff" },
+    agy: { name: "Gemini", cli: "agy", glyph: "✦", tile: "#1a73e8", ink: "#ffffff" }
   })
   readonly property var provider: providers[addon.option("with")] || providers.codex
 

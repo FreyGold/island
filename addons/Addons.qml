@@ -124,7 +124,7 @@ Item {
       description: "Answers launcher questions in the island",
       options: [
         { key: "with", label: "Ask With", detail: "Uses the command-line tool you're signed in to", type: "popup", default: "codex",
-          choices: [{ label: "Claude", value: "claude" }, { label: "Codex", value: "codex" }] }
+          choices: [{ label: "Claude", value: "claude" }, { label: "Codex", value: "codex" }, { label: "Gemini (agy)", value: "gemini" }] }
       ] }
   ]
 
