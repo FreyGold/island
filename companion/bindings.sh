@@ -41,6 +41,7 @@ catalog=(
   'stats|System Stats|addonSettings stats|||stats'
   'agents|Agents|addonSettings agents|||agents'
   'displays|Displays|addonSettings displays|||displays'
+  'ask|Ask AI|apps|||ask'
 )
 
 field() { local IFS='|'; local parts=($1); printf '%s' "${parts[$2]:-}"; }

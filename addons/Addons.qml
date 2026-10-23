@@ -123,8 +123,15 @@ Item {
       ],
       description: "Answers launcher questions in the island",
       options: [
-        { key: "with", label: "Ask With", detail: "Uses the command-line tool you're signed in to", type: "popup", default: "codex",
-          choices: [{ label: "Claude", value: "claude" }, { label: "Codex", value: "codex" }, { label: "Gemini (agy)", value: "gemini" }] }
+        { key: "with", label: "Ask With", detail: "Uses the command-line tool you're signed in to", type: "popup", default: "gemini",
+          choices: [{ label: "Gemini (agy)", value: "gemini" }, { label: "Claude", value: "claude" }, { label: "Codex", value: "codex" }] },
+        { key: "model", label: "Gemini Model", detail: "Speed and reasoning profile", type: "popup", default: "gemini-3.8-flash-low",
+          choices: [
+            { label: "Flash Low (En Hızlı / Düşünmesiz)", value: "gemini-3.8-flash-low" },
+            { label: "Flash Medium (Dengeli)", value: "gemini-3.8-flash-medium" },
+            { label: "Flash High (Derin Düşünme)", value: "gemini-3.8-flash-high" }
+          ] },
+        { key: "menuSearch", label: "Super + Space Menu", detail: "Also search and ask from the Super+Space menu", type: "switch", default: true }
       ] }
   ]
 

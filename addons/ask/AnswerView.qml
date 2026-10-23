@@ -87,8 +87,9 @@ Item {
         "--output-format", "stream-json", "--include-partial-messages", "--verbose",
         "--system-prompt", systemPrompt, question]
     } else if (provider.cli === "agy" || provider.cli === "gemini") {
-      runner.command = ["sh", "-c", 'CMD=$(command -v agy || command -v gemini); if [ -z "$CMD" ]; then echo "Gemini CLI (agy) not found" >&2; exit 127; fi; exec "$CMD" -p "$1" --output-format stream-json --dangerously-skip-permissions --disable-slash-commands < /dev/null',
-        "sh", systemPrompt + "\n\nQuestion: " + question]
+      var selectedModel = String(ask.model || "gemini-3.8-flash-low")
+      runner.command = ["sh", "-c", 'CMD=$(command -v agy || command -v gemini); if [ -z "$CMD" ]; then echo "Gemini CLI (agy) not found" >&2; exit 127; fi; MODEL="${2:-gemini-3.8-flash-low}"; EFFORT="low"; if echo "$MODEL" | grep -q "medium"; then EFFORT="medium"; elif echo "$MODEL" | grep -q "high"; then EFFORT="high"; fi; exec "$CMD" -p "$1" --model "$MODEL" --effort "$EFFORT" --output-format stream-json --dangerously-skip-permissions --disable-slash-commands < /dev/null',
+        "sh", systemPrompt + "\n\nQuestion: " + question, selectedModel]
     } else {
       // Codex adds anything piped to it to the prompt and waits for the
       // pipe to close, so give it an empty stdin.

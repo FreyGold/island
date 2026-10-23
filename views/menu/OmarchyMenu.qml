@@ -13,12 +13,14 @@ import "file:///usr/share/omarchy/shell/plugins/menu/MenuModel.js" as MenuModel
 // everything under it, showing where each result lives.
 ListPicker {
   id: menu
-  placeholder: activeMenu === "root" ? "Search" : MenuModel.pathFor(items_, activeMenu)
+  placeholder: activeMenu === "root"
+    ? (host.addons.option("ask", "menuSearch") !== false ? ["Search"].concat(host.addons.launcherHints).join(" or ") : "Search")
+    : MenuModel.pathFor(items_, activeMenu)
   emptyText: "Nothing matches"
   rowHeight: 46
   visibleRows: 9
   items: rows
-  onChosen: function(entry) { activate(entry) }
+  onChosen: function(entry) { if (entry && entry.addonRow) entry.run(); else activate(entry) }
   onKeyFilter: function(event) {
     var empty = query === ""
     if (event.key === Qt.Key_Escape && activeMenu !== "root") { goBack(); event.accepted = true }
@@ -210,7 +212,14 @@ ListPicker {
       }
     }
     if (q) list.sort(function(a, b) { return a.score !== b.score ? a.score - b.score : a.path.localeCompare(b.path) })
-    return list.map(function(r) { r.key = r.itemId; return r })
+    var results = list.map(function(r) { r.key = r.itemId; return r })
+    if (q && host.addons.option("ask", "menuSearch") !== false) {
+      var addonRows = host.addons.launcherRows(q)
+      var first = addonRows.filter(function(row) { return row.first || !results.length })
+      var last = addonRows.filter(function(row) { return first.indexOf(row) === -1 })
+      return first.concat(results, last)
+    }
+    return results
   }
 
   function openMenu(id, push) {
@@ -253,9 +262,27 @@ ListPicker {
       property var entry: ({})
       property bool selected: false
       readonly property bool isMenu: entry.kind === "menu" || entry.kind === "link"
+      readonly property bool isAddon: !!(entry && entry.addonRow)
 
+      ClippingRectangle {
+        id: addonTile
+        visible: menuRow.isAddon
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        width: 28; height: 28; radius: 8
+        color: menuRow.isAddon && menuRow.entry.tile ? menuRow.entry.tile : menu.host.theme.fill("subtle")
+        Text {
+          anchors.centerIn: parent
+          visible: menuRow.isAddon
+          text: menuRow.isAddon ? String(menuRow.entry.glyph || "") : ""
+          color: (menuRow.entry && menuRow.entry.ink) || "#ffffff"
+          font.family: menu.host.theme.fontFamily
+          font.pixelSize: menu.host.theme.px(15)
+        }
+      }
       Text {
         id: icon
+        visible: !menuRow.isAddon
         anchors.left: parent.left
         anchors.verticalCenter: parent.verticalCenter
         width: 24
@@ -266,7 +293,7 @@ ListPicker {
         font.pixelSize: menu.host.theme.px(17)
       }
       Column {
-        anchors.left: icon.right
+        anchors.left: menuRow.isAddon ? addonTile.right : icon.right
         anchors.leftMargin: 12
         anchors.right: chevron.left
         anchors.rightMargin: 8

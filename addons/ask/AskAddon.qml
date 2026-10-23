@@ -21,6 +21,8 @@ Addon {
     agy: { name: "Gemini", cli: "agy", glyph: "✦", tile: "#1a73e8", ink: "#ffffff" }
   })
   readonly property var provider: providers[addon.option("with")] || providers.codex
+  readonly property string model: addon.option("model") || "gemini-3.8-flash-low"
+  readonly property bool menuSearch: addon.option("menuSearch") !== false
 
   property string question: ""
   function ask(text) {
