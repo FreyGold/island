@@ -1,183 +1,115 @@
-<div align="center">
+<p align="center">
+  <img src="assets/readme/hero.webp" alt="Island, the Dynamic Island for Omarchy: music on the island and the full player, a download, Claude Code at work, screen recording, headphones connecting, a timer, a meeting in 10 minutes, a notification, a finished system update, the weather and calendar addons, Control Center and editing it, and the Settings, Displays, and Agents pages" width="100%">
+</p>
 
-# Island
+<p align="center">
+  <a href="https://github.com/Guilhermerisu/island/stargazers"><img src="https://img.shields.io/github/stars/Guilhermerisu/island?style=flat-square&color=3a8a72" alt="GitHub stars"></a>
+  <a href="https://github.com/Guilhermerisu/island/commits"><img src="https://img.shields.io/github/last-commit/Guilhermerisu/island?style=flat-square&color=3a8a72" alt="Last commit"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Guilhermerisu/island?style=flat-square&color=3a8a72" alt="License"></a>
+</p>
 
-<img src="assets/showcase-full.gif" alt="Island morphing between its views, live activities, and an AI answer" width="100%">
-
-### A dynamic island for Omarchy
-
-All Omarchy's menus rewritten as one fluid island.
-
-[Features](#features) · [Screenshots](#screenshots) · [Install](#install) · [Usage](#usage) · [Uninstall](#uninstall)
-
-</div>
-
-## Features
-
-- **At rest:** a clock, or album art and an animated sound wave while music plays.
-- **Live activities:** browser downloads, system updates (pacman, yay, paru, and
-  Omarchy updates), charging and low battery, Bluetooth connections, and anything
-  you copy show up on the pill.
-- **Live feedback:** notification previews and animated volume and mute feedback,
-  with Claude Code and Codex notifications getting their own icons.
-- **Ask AI:** type a question in the launcher and Claude or Codex answers right in
-  the island, Siri-style, using the command-line tool you're already signed in to.
-- **Expanded views:** a control center, player, app launcher, clipboard history,
-  emoji and keybinding search, theme and wallpaper switchers, Omarchy menu, and
-  power menu.
-- **Theme aware:** text and accent colors follow your current Omarchy theme.
-- **Settings:** a pane in the control center for animation speed, a MacBook
-  notch style, the clock, live activities, and addons.
-
-Island runs inside Omarchy's Quickshell process and reserves no screen space.
-
-## Screenshots
-
-### The island
-
-<table>
-  <tr>
-    <td width="50%" align="center"><strong>Island</strong><br><img src="assets/island.png" alt="The resting island with album art and a sound wave" width="100%"></td>
-    <td width="50%" align="center"><strong>Now playing</strong><br><img src="assets/media.png" alt="Now playing player with controls" width="100%"></td>
-  </tr>
-</table>
-
-### Control Center
-
-<table>
-  <tr>
-    <td width="50%" align="center"><strong>Control Center</strong><br><img src="assets/control-center.png" alt="Control Center with system controls and notifications" width="100%"></td>
-    <td width="50%" align="center"><strong>Settings</strong><br><img src="assets/settings.png" alt="Island settings pane with appearance and motion options" width="100%"></td>
-  </tr>
-</table>
-
-### Launcher
-
-<table>
-  <tr>
-    <td width="50%" align="center"><strong>App launcher</strong><br><img src="assets/launcher.png" alt="App launcher" width="100%"></td>
-    <td width="50%" align="center"><strong>Omarchy menu</strong><br><img src="assets/menu.png" alt="Omarchy menu" width="100%"></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Ask AI</strong><br><img src="assets/launcher-ask.png" alt="Launcher with a question for the AI" width="100%"></td>
-    <td align="center"><strong>Answer</strong><br><img src="assets/ai-answer.png" alt="The AI's answer in the island" width="100%"></td>
-  </tr>
-</table>
-
-### Activities
-
-<table>
-  <tr>
-    <td width="33%" align="center"><strong>Charging</strong><br><img src="assets/battery-charging.png" alt="Charging battery live activity" width="100%"></td>
-    <td width="33%" align="center"><strong>Low battery</strong><br><img src="assets/battery-low.png" alt="Low battery live activity" width="100%"></td>
-    <td width="33%" align="center"><strong>Bluetooth</strong><br><img src="assets/bluetooth-connected.png" alt="Bluetooth connection live activity with device battery" width="100%"></td>
-  </tr>
-  <tr>
-    <td width="33%" align="center"><strong>Notification</strong><br><img src="assets/notification.png" alt="Notification preview" width="100%"></td>
-    <td width="33%" align="center"><strong>Claude Code</strong><br><img src="assets/notification-claude.png" alt="Claude Code notification" width="100%"></td>
-    <td width="33%" align="center"><strong>Codex</strong><br><img src="assets/notification-codex.png" alt="Codex notification" width="100%"></td>
-  </tr>
-  <tr>
-    <td width="33%" align="center"><strong>Downloading</strong><br><img src="assets/download.png" alt="Download progress" width="100%"></td>
-    <td width="33%" align="center"><strong>Downloaded</strong><br><img src="assets/download-done.png" alt="Download complete" width="100%"></td>
-    <td width="33%" align="center"><strong>Updated</strong><br><img src="assets/update-done.png" alt="System update complete" width="100%"></td>
-  </tr>
-</table>
-
-### Personalization
-
-<table>
-  <tr>
-    <td width="50%" align="center"><strong>Themes</strong><br><img src="assets/themes.png" alt="Theme switcher" width="100%"></td>
-    <td width="50%" align="center"><strong>Wallpapers</strong><br><img src="assets/wallpapers.png" alt="Wallpaper switcher" width="100%"></td>
-  </tr>
-  <tr>
-    <td colspan="2" align="center"><strong>Power menu</strong><br><img src="assets/power.png" alt="Power menu" width="50%"></td>
-  </tr>
-</table>
-
-### Search
-
-<table>
-  <tr>
-    <td width="50%" align="center"><strong>Emoji</strong><br><img src="assets/emoji.png" alt="Emoji picker" width="100%"></td>
-    <td width="50%" align="center"><strong>Keybindings</strong><br><img src="assets/keybinds.png" alt="Keybinding search" width="100%"></td>
-  </tr>
-  <tr>
-    <td colspan="2" align="center"><strong>Clipboard history</strong><br><img src="assets/clipboard.png" alt="Clipboard history with an image preview" width="50%"></td>
-  </tr>
-</table>
-
-## Install
-
-Requires Omarchy 4 and its Quickshell shell.
+<a id="install"></a>
+<h2 align="center">Install</h2>
 
 ```sh
 omarchy plugin add https://github.com/Guilhermerisu/island.git
 omarchy bar use guilhermerisu.island
 ```
 
-On first launch, click the amber **Click to Setup** pill. It installs
-Island's notification companion, connects supported Omarchy menu entries, and
-writes `~/.config/hypr/island-bindings.lua`, which points the keys you already
-use for the menu, launcher, emoji, clipboard, and other views at the island.
+<br>
 
-## Usage
+<a id="features"></a>
+<h2 align="center">Features</h2>
 
-### Controls
+<p align="center">
+  <img src="assets/readme/activities.webp" alt="Live activities: the resting island with music, a download and a system update in progress, Claude Code at work, screen recording, Bluetooth headphones, an upcoming event, a call, a timer, volume, workspaces, low battery, notifications from an app and from Claude Code, copied text, Wi-Fi, charging, and a finished download and update" width="100%">
+</p>
 
-| Action | Result |
-| --- | --- |
-| Click the clock | Open the control center. |
-| Click album art or sound wave | Open the player. |
-| Click a notification | Dismiss it. |
-| Click a download or update | Open the file (or your Downloads folder). |
-| Click the copied pill | Open the clipboard history. |
-| Press Esc | Close the open view. |
-| Super + Shift + Space | Hide or show the pill (notifications and views still appear). |
+<br>
 
-### Settings
+<p align="center">
+  <img src="assets/readme/control.webp" alt="Control Center with quick controls, sound, and notifications, and the Island settings pane" width="100%">
+</p>
 
-Open the control center and click the gear. Changes apply right away and are
-saved to `~/.config/omarchy/island.json`, which you can also edit by hand.
-In Control Center, click the pencil to edit its cards. Drag cards to rearrange
-them, click a minus badge to hide one, or use **Add Controls** to restore it.
-Under **Keybinds**, click a shortcut's keys and type new ones to change it, or
-press Backspace to remove it and give the key back to Omarchy. **Restore
-Defaults** matches your keys again. These are saved to
-`~/.config/hypr/island-bindings.lua`.
+<br>
 
-### Other plugins
+<p align="center">
+  <img src="assets/readme/menus.webp" alt="Every menu: app launcher, Omarchy menu, theme and wallpaper switchers, clipboard history, and emoji picker" width="100%">
+</p>
 
-Island is the bar, so plugins that add their own panel, overlay, or menu keep
-working — open the Plugins view (Settings → Keybinds, or the plugins addon) to
-enable one and open it. Plugins that add a **bar widget** can't show while
-Island is the bar, since Island doesn't render other plugins' widgets; if you
-need one, switch back with `omarchy bar use omarchy.bar`. See
-[issue #8](https://github.com/Guilhermerisu/island/issues/8).
+<br>
 
-### Ask AI
+<p align="center">
+  <img src="assets/readme/addons.webp" alt="Addons: Claude Code at work on the island, collapsed and expanded, a Teams call, weather with an hourly forecast, a question asked from the launcher and the AI's answer in the island, a timer, a calendar with the day's events, and the Addons, Agents, Displays, and System Stats settings pages" width="100%">
+</p>
 
-Ask AI is an addon, on by default. Questions typed in the launcher are answered
-by the AI chosen under **Ask With** (Settings → Addons → Ask AI), through its
-command-line tool:
+<br>
 
-- **Claude:** [Claude Code](https://claude.com/claude-code), signed in (`claude`).
-- **Codex:** [Codex CLI](https://github.com/openai/codex), signed in (`codex`).
+<a id="faq"></a>
+<h2 align="center">FAQ</h2>
 
-Remove the addon to turn asking off.
+<details>
+<summary><b>Do my other Omarchy plugins still work?</b></summary>
+<br>
 
-## Uninstall
+Plugins that add their own panel, overlay, or menu keep working. Open the
+Plugins view (Settings → Keybinds, or the Plugins addon) to enable one and open
+it.
+
+Plugins that add a **bar widget** can't show while Island is the bar, since
+Island doesn't render other plugins' widgets.
+</details>
+
+<details>
+<summary><b>Can I turn off a live activity I don't want?</b></summary>
+<br>
+
+Yes. Each one has its own switch in Settings → Live Activities: Now Playing,
+Play & Pause, Workspace Indicator, Downloads, Screen Recording, System Updates,
+Bluetooth Devices, Network, Battery, Volume, Brightness, and Clipboard.
+</details>
+
+<details>
+<summary><b>Can I change the keyboard shortcuts?</b></summary>
+<br>
+
+Yes. Open Settings → Keybinds, pick a shortcut, and press the new keys. An
+addon's shortcuts are set in its options on the Addons page.
+</details>
+
+<details>
+<summary><b>How does Island update?</b></summary>
+<br>
+
+Island checks GitHub shortly after the shell starts and then every six hours.
+When a new version is out, the island shows **Island Update: A new version is
+ready. Click to update.** Click it, and Island updates and restarts the shell.
+This needs the plugin to be a git checkout, which `omarchy plugin add` gives
+you, with no local changes.
+</details>
+
+<details>
+<summary><b>Can it look like a MacBook notch?</b></summary>
+<br>
+
+Yes. Turn on **Notch Style** in Settings → General to attach the island to the
+top edge of the screen.
+</details>
+
+<details>
+<summary><b>How do I uninstall it?</b></summary>
+<br>
 
 ```sh
 bash ~/.config/omarchy/plugins/guilhermerisu.island/companion/uninstall.sh
 ```
 
-It switches back to the stock bar, removes the notification companion (Omarchy's
-own notifications come back), undoes the `shell.json` and Omarchy menu changes
-the setup made, deletes `island-bindings.lua`, removes Island, and restarts the
-shell.
+It switches back to the stock bar, removes the notification companion
+(Omarchy's own notifications come back), undoes the `shell.json` and Omarchy
+menu changes the setup made, deletes `island-bindings.lua`, removes Island, and
+restarts the shell.
+</details>
 
-## License
+<br>
 
-[MIT](LICENSE)
+<p align="center"><sub>Released under the <a href="LICENSE">MIT license</a>.</sub></p>
