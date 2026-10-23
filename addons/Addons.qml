@@ -125,11 +125,23 @@ Item {
       options: [
         { key: "with", label: "Ask With", detail: "Uses the command-line tool you're signed in to", type: "popup", default: "gemini",
           choices: [{ label: "Gemini (agy)", value: "gemini" }, { label: "Claude", value: "claude" }, { label: "Codex", value: "codex" }] },
-        { key: "model", label: "Gemini Model", detail: "Speed and reasoning profile", type: "popup", default: "gemini-3.8-flash-low",
+        { key: "geminiModel", label: "Gemini Model", detail: "Speed and reasoning profile", type: "popup", default: "gemini-3.8-flash-low", visibleWith: ["gemini", "agy"],
           choices: [
-            { label: "Flash Low (En Hızlı / Düşünmesiz)", value: "gemini-3.8-flash-low" },
-            { label: "Flash Medium (Dengeli)", value: "gemini-3.8-flash-medium" },
-            { label: "Flash High (Derin Düşünme)", value: "gemini-3.8-flash-high" }
+            { label: "Flash Low (Fastest / No Thinking)", value: "gemini-3.8-flash-low" },
+            { label: "Flash Medium (Balanced)", value: "gemini-3.8-flash-medium" },
+            { label: "Flash High (Deep Thinking)", value: "gemini-3.8-flash-high" }
+          ] },
+        { key: "claudeModel", label: "Claude Model", detail: "Model profile for Claude", type: "popup", default: "haiku", visibleWith: "claude",
+          choices: [
+            { label: "Claude Haiku (Fastest)", value: "haiku" },
+            { label: "Claude Sonnet (Balanced)", value: "sonnet" },
+            { label: "Claude Opus (Deep Thinking)", value: "opus" }
+          ] },
+        { key: "codexModel", label: "Codex Model", detail: "Model profile for Codex", type: "popup", default: "o4-mini", visibleWith: "codex",
+          choices: [
+            { label: "o4-mini (Fastest)", value: "o4-mini" },
+            { label: "o3-mini (Balanced)", value: "o3-mini" },
+            { label: "gpt-5 (Deep)", value: "gpt-5" }
           ] },
         { key: "menuSearch", label: "Super + Space Menu", detail: "Also search and ask from the Super+Space menu", type: "switch", default: true }
       ] }

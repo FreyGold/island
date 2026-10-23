@@ -81,20 +81,22 @@ Item {
     busy = true
     runner.running = false
     if (provider.cli === "claude") {
+      var claudeModel = String(ask.claudeModel || "haiku")
       runner.command = ["claude", "-p",
         "--setting-sources", "", "--strict-mcp-config", "--tools", "",
-        "--model", "haiku", "--no-session-persistence",
+        "--model", claudeModel, "--no-session-persistence",
         "--output-format", "stream-json", "--include-partial-messages", "--verbose",
         "--system-prompt", systemPrompt, question]
     } else if (provider.cli === "agy" || provider.cli === "gemini") {
-      var selectedModel = String(ask.model || "gemini-3.8-flash-low")
+      var selectedModel = String(ask.geminiModel || ask.model || "gemini-3.8-flash-low")
       runner.command = ["sh", "-c", 'CMD=$(command -v agy || command -v gemini); if [ -z "$CMD" ]; then echo "Gemini CLI (agy) not found" >&2; exit 127; fi; MODEL="${2:-gemini-3.8-flash-low}"; EFFORT="low"; if echo "$MODEL" | grep -q "medium"; then EFFORT="medium"; elif echo "$MODEL" | grep -q "high"; then EFFORT="high"; fi; exec "$CMD" -p "$1" --model "$MODEL" --effort "$EFFORT" --output-format stream-json --dangerously-skip-permissions --disable-slash-commands < /dev/null',
         "sh", systemPrompt + "\n\nQuestion: " + question, selectedModel]
     } else {
       // Codex adds anything piped to it to the prompt and waits for the
       // pipe to close, so give it an empty stdin.
-      runner.command = ["sh", "-c", 'exec codex exec --json --skip-git-repo-check --ephemeral -s read-only "$1" < /dev/null',
-        "sh", systemPrompt + "\n\nQuestion: " + question]
+      var codexModel = String(ask.codexModel || "o4-mini")
+      runner.command = ["sh", "-c", 'exec codex exec -m "$2" --json --skip-git-repo-check --ephemeral -s read-only "$1" < /dev/null',
+        "sh", systemPrompt + "\n\nQuestion: " + question, codexModel]
     }
     runner.running = true
   }
