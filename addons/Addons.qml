@@ -127,9 +127,9 @@ Item {
           choices: [{ label: "Gemini (agy)", value: "gemini" }, { label: "Claude", value: "claude" }, { label: "Codex", value: "codex" }] },
         { key: "geminiModel", label: "Gemini Model", detail: "Speed and reasoning profile", type: "popup", default: "gemini-3.8-flash-low", visibleWith: ["gemini", "agy"],
           choices: [
-            { label: "Flash Low (Fastest / No Thinking)", value: "gemini-3.8-flash-low" },
-            { label: "Flash Medium (Balanced)", value: "gemini-3.8-flash-medium" },
-            { label: "Flash High (Deep Thinking)", value: "gemini-3.8-flash-high" }
+            { label: "Gemini 3.8 Flash Low (Fastest)", value: "gemini-3.8-flash-low" },
+            { label: "Gemini 3.8 Flash Medium (Balanced)", value: "gemini-3.8-flash-medium" },
+            { label: "Gemini 3.8 Flash High (Deep Thinking)", value: "gemini-3.8-flash-high" }
           ] },
         { key: "claudeModel", label: "Claude Model", detail: "Model profile for Claude", type: "popup", default: "haiku", visibleWith: "claude",
           choices: [
@@ -137,11 +137,12 @@ Item {
             { label: "Claude Sonnet (Balanced)", value: "sonnet" },
             { label: "Claude Opus (Deep Thinking)", value: "opus" }
           ] },
-        { key: "codexModel", label: "Codex Model", detail: "Model profile for Codex", type: "popup", default: "o4-mini", visibleWith: "codex",
+        { key: "codexModel", label: "Codex Model", detail: "Model profile for Codex", type: "popup", default: "gpt-5.6-terra", visibleWith: "codex",
           choices: [
-            { label: "o4-mini (Fastest)", value: "o4-mini" },
-            { label: "o3-mini (Balanced)", value: "o3-mini" },
-            { label: "gpt-5 (Deep)", value: "gpt-5" }
+            { label: "GPT-5.6 Luna (Fastest)", value: "gpt-5.6-luna" },
+            { label: "GPT-5.6 Terra (Balanced)", value: "gpt-5.6-terra" },
+            { label: "GPT-5.6 Sol (Deep Thinking)", value: "gpt-5.6-sol" },
+            { label: "GPT-6 Sol (Next-Gen)", value: "gpt-6-sol" }
           ] },
         { key: "menuSearch", label: "Super + Space Menu", detail: "Also search and ask from the Super+Space menu", type: "switch", default: true }
       ] }

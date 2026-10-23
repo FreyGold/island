@@ -23,7 +23,7 @@ Addon {
   readonly property var provider: providers[addon.option("with")] || providers.codex
   readonly property string geminiModel: addon.option("geminiModel") || addon.option("model") || "gemini-3.8-flash-low"
   readonly property string claudeModel: addon.option("claudeModel") || "haiku"
-  readonly property string codexModel: addon.option("codexModel") || "o4-mini"
+  readonly property string codexModel: addon.option("codexModel") || "gpt-5.6-terra"
   readonly property string model: {
     if (provider.cli === "claude") return claudeModel
     if (provider.cli === "codex") return codexModel

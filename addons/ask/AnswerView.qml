@@ -94,7 +94,7 @@ Item {
     } else {
       // Codex adds anything piped to it to the prompt and waits for the
       // pipe to close, so give it an empty stdin.
-      var codexModel = String(ask.codexModel || "o4-mini")
+      var codexModel = String(ask.codexModel || "gpt-5.6-terra")
       runner.command = ["sh", "-c", 'exec codex exec -m "$2" --json --skip-git-repo-check --ephemeral -s read-only "$1" < /dev/null',
         "sh", systemPrompt + "\n\nQuestion: " + question, codexModel]
     }
