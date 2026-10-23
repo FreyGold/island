@@ -634,7 +634,7 @@ Item {
             : root.addonPill ? root.addonPill.pillWidth + (root.view === "feedback" || root.addonPill.pillAsks ? 0 : clockExtra)
             : root.view === "feedback" ? 280
             : root.setup.needsSetup ? (root.setup.warning.length > 24 ? 320 : 250)
-            : root.downloadDone ? 360
+            : root.downloadDone ? 380
             : root.downloadActive ? (root.downloads.active ? 240 : 280) + clockExtra
             : root.mediaPill ? 240 + clockExtra
             : 100 + clockExtra
@@ -644,7 +644,7 @@ Item {
             : root.clipboardPill || root.activityPill ? (root.settings.notch ? 40 : 44)
             : root.addonPill ? root.addonPill.pillHeight
             : root.workspacesPill ? (root.settings.notch ? 36 : 40)
-            : root.downloadDone ? 64
+            : root.downloadDone ? 76
             : root.mediaPill || root.downloadPill || root.recordingPill ? (root.settings.notch ? 40 : 44)
             : root.volumePill ? (root.settings.notch ? 40 : 44)
             : root.osdPill ? (root.settings.notch ? 40 : 44)
