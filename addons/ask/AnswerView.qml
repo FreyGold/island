@@ -6,9 +6,9 @@ import "../../components"
 
 // Siri-style answers: a question typed in the launcher is sent to the chosen
 // AI through its command-line tool, signed in with your own account (Claude
-// Code's `claude -p`, or `codex exec`). Like Siri in the
+// Code's `claude -p`, `codex exec`, or Gemini / Antigravity's `agy -p`). Like Siri in the
 // Dynamic Island, a compact pill with glowing dots while it thinks, then the
-// answer in large type as it arrives (Claude streams word by word; Codex
+// answer in large type as it arrives (Claude and Gemini stream word by word; Codex
 // answers at once). Copy appears on hover. Esc closes (and stops a pending
 // answer).
 Item {
@@ -81,26 +81,51 @@ Item {
     busy = true
     runner.running = false
     if (provider.cli === "claude") {
+      var claudeModel = String(ask.claudeModel || "haiku")
       runner.command = ["claude", "-p",
         "--setting-sources", "", "--strict-mcp-config", "--tools", "",
-        "--model", "haiku", "--no-session-persistence",
+        "--model", claudeModel, "--no-session-persistence",
         "--output-format", "stream-json", "--include-partial-messages", "--verbose",
         "--system-prompt", systemPrompt, question]
+    } else if (provider.cli === "agy" || provider.cli === "gemini") {
+      var selectedModel = String(ask.geminiModel || ask.model || "gemini-3.8-flash-low")
+      runner.command = ["sh", "-c", 'CMD=$(command -v agy || command -v gemini); if [ -z "$CMD" ]; then echo "Gemini CLI (agy) not found" >&2; exit 127; fi; MODEL="${2:-gemini-3.8-flash-low}"; EFFORT="low"; if echo "$MODEL" | grep -q "medium"; then EFFORT="medium"; elif echo "$MODEL" | grep -q "high"; then EFFORT="high"; fi; exec "$CMD" -p "$1" --model "$MODEL" --effort "$EFFORT" --output-format stream-json --dangerously-skip-permissions --disable-slash-commands < /dev/null',
+        "sh", systemPrompt + "\n\nQuestion: " + question, selectedModel]
     } else {
       // Codex adds anything piped to it to the prompt and waits for the
       // pipe to close, so give it an empty stdin.
-      runner.command = ["sh", "-c", 'exec codex exec --json --skip-git-repo-check --ephemeral -s read-only "$1" < /dev/null',
-        "sh", systemPrompt + "\n\nQuestion: " + question]
+      var codexModel = String(ask.codexModel || "gpt-5.6-terra")
+      runner.command = ["sh", "-c", 'exec codex exec -m "$2" --json --skip-git-repo-check --ephemeral -s read-only "$1" < /dev/null',
+        "sh", systemPrompt + "\n\nQuestion: " + question, codexModel]
     }
     runner.running = true
   }
 
   function handle(line) {
     var event
-    try { event = JSON.parse(line) } catch (e) { return }
+    try { event = JSON.parse(line) } catch (e) {
+      var trimmed = String(line || "").trim()
+      if (trimmed && !text && /error|failed|denied|unauthorized|tier/i.test(trimmed)) {
+        error = trimmed
+        busy = false
+      }
+      return
+    }
     if (event.type === "stream_event" && event.event && event.event.type === "content_block_delta"
         && event.event.delta && event.event.delta.type === "text_delta") {
       text += event.event.delta.text
+    } else if (event.event === "step_update" && event.step_update && event.step_update.text_delta) {
+      text += event.step_update.text_delta
+    } else if (event.event === "result" && event.result) {
+      if (event.result.status && event.result.status !== "SUCCESS") {
+        error = String(event.result.error || event.result.response || "Gemini couldn't answer")
+      } else if (event.result.response) {
+        text = String(event.result.response)
+      }
+      busy = false
+    } else if (event.event === "error") {
+      error = String(event.error || "Gemini couldn't answer")
+      busy = false
     } else if (event.type === "result") {
       if (event.is_error) error = String(event.result || "Claude couldn't answer")
       else if (!text) text = String(event.result || "")

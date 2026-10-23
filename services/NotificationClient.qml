@@ -43,6 +43,7 @@ Item {
     if (String(row.app || "") === "Island Timer") return "timer"
     var summary = String(row.summary || "")
     if (summary === "Claude Code") return "claude"
+    if (summary === "Gemini" || summary === "Antigravity" || summary === "agy") return "gemini"
     var fromTerminal = /ghostty|kitty|alacritty|foot|wezterm/i.test(String(row.appIcon || "") + " " + String(row.app || ""))
     if (summary === "Codex" || (fromTerminal && /^(Ghostty|kitty|Alacritty|foot|WezTerm)$/.test(summary))) return "codex"
     return ""
@@ -50,6 +51,7 @@ Item {
   readonly property var brands: ({
     claude: { glyph: "", tile: "#d97757", ink: "#ffffff" },
     codex: { glyph: "", tile: "#f2f2f2", ink: "#000000" },
+    gemini: { glyph: "✦", tile: "#1a73e8", ink: "#ffffff" },
     timer: { glyph: "󰔛", tile: "#ff9f0a", ink: "#ffffff" }
   })
   function brand(row) {
@@ -59,6 +61,7 @@ Item {
   function title(row) {
     if (!row) return "Notification"
     if (agent(row) === "codex") return "Codex"
+    if (agent(row) === "gemini") return "Gemini"
     return String(row.summary || row.app || "Notification")
   }
   function age(timestamp) {

@@ -123,8 +123,28 @@ Item {
       ],
       description: "Answers launcher questions in the island",
       options: [
-        { key: "with", label: "Ask With", detail: "Uses the command-line tool you're signed in to", type: "popup", default: "codex",
-          choices: [{ label: "Claude", value: "claude" }, { label: "Codex", value: "codex" }] }
+        { key: "with", label: "Ask With", detail: "Uses the command-line tool you're signed in to", type: "popup", default: "gemini",
+          choices: [{ label: "Gemini (agy)", value: "gemini" }, { label: "Claude", value: "claude" }, { label: "Codex", value: "codex" }] },
+        { key: "geminiModel", label: "Gemini Model", detail: "Speed and reasoning profile", type: "popup", default: "gemini-3.8-flash-low", visibleWith: ["gemini", "agy"],
+          choices: [
+            { label: "Gemini 3.8 Flash Low (Fastest)", value: "gemini-3.8-flash-low" },
+            { label: "Gemini 3.8 Flash Medium (Balanced)", value: "gemini-3.8-flash-medium" },
+            { label: "Gemini 3.8 Flash High (Deep Thinking)", value: "gemini-3.8-flash-high" }
+          ] },
+        { key: "claudeModel", label: "Claude Model", detail: "Model profile for Claude", type: "popup", default: "haiku", visibleWith: "claude",
+          choices: [
+            { label: "Claude Haiku (Fastest)", value: "haiku" },
+            { label: "Claude Sonnet (Balanced)", value: "sonnet" },
+            { label: "Claude Opus (Deep Thinking)", value: "opus" }
+          ] },
+        { key: "codexModel", label: "Codex Model", detail: "Model profile for Codex", type: "popup", default: "gpt-5.6-terra", visibleWith: "codex",
+          choices: [
+            { label: "GPT-5.6 Luna (Fastest)", value: "gpt-5.6-luna" },
+            { label: "GPT-5.6 Terra (Balanced)", value: "gpt-5.6-terra" },
+            { label: "GPT-5.6 Sol (Deep Thinking)", value: "gpt-5.6-sol" },
+            { label: "GPT-6 Sol (Next-Gen)", value: "gpt-6-sol" }
+          ] },
+        { key: "menuSearch", label: "Super + Space Menu", detail: "Also search and ask from the Super+Space menu", type: "switch", default: true }
       ] }
   ]
 
