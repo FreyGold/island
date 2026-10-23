@@ -133,9 +133,9 @@ Item {
       ],
       description: "Answers launcher questions in the island",
       options: [
-        { key: "with", label: "Ask With", detail: "Uses the command-line tool you're signed in to", type: "popup", default: "gemini",
-          choices: [{ label: "Gemini (agy)", value: "gemini" }, { label: "Claude", value: "claude" }, { label: "Codex", value: "codex" }] },
-        { key: "geminiModel", label: "Gemini Model", detail: "Speed and reasoning profile", type: "popup", default: "gemini-3.8-flash-low", visibleWith: ["gemini", "agy"],
+        { key: "with", label: "Ask With", detail: "Uses the command-line tool you're signed in to", type: "popup", default: "claude",
+          choices: [{ label: "Claude", value: "claude" }, { label: "Codex", value: "codex" }, { label: "Gemini", value: "gemini" }] },
+        { key: "geminiModel", label: "Gemini Model", detail: "Speed and reasoning profile", type: "popup", default: "gemini-3.8-flash-low", visibleWith: "gemini",
           choices: [
             { label: "Gemini 3.8 Flash Low (Fastest)", value: "gemini-3.8-flash-low" },
             { label: "Gemini 3.8 Flash Medium (Balanced)", value: "gemini-3.8-flash-medium" },
@@ -154,7 +154,7 @@ Item {
             { label: "GPT-5.6 Sol (Deep Thinking)", value: "gpt-5.6-sol" },
             { label: "GPT-6 Sol (Next-Gen)", value: "gpt-6-sol" }
           ] },
-        { key: "menuSearch", label: "Super + Space Menu", detail: "Also search and ask from the Super+Space menu", type: "switch", default: true }
+        { key: "menuSearch", label: "Omarchy Menu", detail: "Also search and ask from the Omarchy menu", type: "switch", default: false }
       ] }
   ]
 

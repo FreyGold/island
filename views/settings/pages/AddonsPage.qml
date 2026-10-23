@@ -166,8 +166,8 @@ ColumnLayout {
                   required property var modelData
                   required property int index
                   readonly property var value: page.addons.option(addon.modelData.id, modelData.key)
-                  readonly property string currentWith: String(page.addons.option(addon.modelData.id, "with") || "gemini")
-                  visible: !modelData.visibleWith || (Array.isArray(modelData.visibleWith) ? modelData.visibleWith.indexOf(currentWith) !== -1 : modelData.visibleWith === currentWith)
+                  // An option for one choice of "with" (Ask AI's model for its AI).
+                  visible: !modelData.visibleWith || page.addons.option(addon.modelData.id, "with") === modelData.visibleWith
                   function pick(value) { page.addons.setOption(addon.modelData.id, modelData.key, value) }
                   view: page.view
                   label: modelData.label || modelData.key

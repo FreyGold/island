@@ -1,7 +1,6 @@
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import Quickshell.Widgets
 import "../../components"
 // Omarchy's own menu model: parsing, merging your overrides, conditions,
 // labels, and search ranking all behave exactly like its menu.
@@ -15,7 +14,7 @@ import "file:///usr/share/omarchy/shell/plugins/menu/MenuModel.js" as MenuModel
 ListPicker {
   id: menu
   placeholder: activeMenu === "root"
-    ? (host.addons.option("ask", "menuSearch") !== false ? ["Search"].concat(host.addons.launcherHints).join(" or ") : "Search")
+    ? (host.addons.option("ask", "menuSearch") ? ["Search"].concat(host.addons.launcherHints).join(" or ") : "Search")
     : MenuModel.pathFor(items_, activeMenu)
   emptyText: "Nothing matches"
   rowHeight: 46
@@ -214,7 +213,7 @@ ListPicker {
     }
     if (q) list.sort(function(a, b) { return a.score !== b.score ? a.score - b.score : a.path.localeCompare(b.path) })
     var results = list.map(function(r) { r.key = r.itemId; return r })
-    if (q && host.addons.option("ask", "menuSearch") !== false) {
+    if (q && host.addons.option("ask", "menuSearch")) {
       var addonRows = host.addons.launcherRows(q)
       var first = addonRows.filter(function(row) { return row.first || !results.length })
       var last = addonRows.filter(function(row) { return first.indexOf(row) === -1 })

@@ -87,10 +87,14 @@ Item {
         "--model", claudeModel, "--no-session-persistence",
         "--output-format", "stream-json", "--include-partial-messages", "--verbose",
         "--system-prompt", systemPrompt, question]
-    } else if (provider.cli === "agy" || provider.cli === "gemini") {
-      var selectedModel = String(ask.geminiModel || ask.model || "gemini-3.8-flash-low")
-      runner.command = ["sh", "-c", 'CMD=$(command -v agy || command -v gemini); if [ -z "$CMD" ]; then echo "Gemini CLI (agy) not found" >&2; exit 127; fi; MODEL="${2:-gemini-3.8-flash-low}"; EFFORT="low"; if echo "$MODEL" | grep -q "medium"; then EFFORT="medium"; elif echo "$MODEL" | grep -q "high"; then EFFORT="high"; fi; exec "$CMD" -p "$1" --model "$MODEL" --effort "$EFFORT" --output-format stream-json --dangerously-skip-permissions --disable-slash-commands < /dev/null',
-        "sh", systemPrompt + "\n\nQuestion: " + question, selectedModel]
+    } else if (provider.cli === "agy") {
+      // No --dangerously-skip-permissions: like Claude (no tools) and Codex
+      // (read-only), Gemini only answers; with an empty stdin nothing can
+      // approve a tool call.
+      var geminiModel = String(ask.geminiModel || "gemini-3.8-flash-low")
+      var effort = /high/.test(geminiModel) ? "high" : /medium/.test(geminiModel) ? "medium" : "low"
+      runner.command = ["sh", "-c", 'command -v agy >/dev/null || { echo "Gemini CLI (agy) not found" >&2; exit 127; }; exec agy -p "$1" --model "$2" --effort "$3" --output-format stream-json --disable-slash-commands < /dev/null',
+        "sh", systemPrompt + "\n\nQuestion: " + question, geminiModel, effort]
     } else {
       // Codex adds anything piped to it to the prompt and waits for the
       // pipe to close, so give it an empty stdin.

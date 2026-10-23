@@ -17,19 +17,12 @@ Addon {
   readonly property var providers: ({
     claude: { name: "Claude", cli: "claude", glyph: "", tile: "#d97757", ink: "#ffffff" },
     codex: { name: "Codex", cli: "codex", glyph: "", tile: "#f2f2f2", ink: "#000000" },
-    gemini: { name: "Gemini", cli: "agy", glyph: "✦", tile: "#1a73e8", ink: "#ffffff" },
-    agy: { name: "Gemini", cli: "agy", glyph: "✦", tile: "#1a73e8", ink: "#ffffff" }
+    gemini: { name: "Gemini", cli: "agy", glyph: "✦", tile: "#1a73e8", ink: "#ffffff" }
   })
-  readonly property var provider: providers[addon.option("with")] || providers.codex
-  readonly property string geminiModel: addon.option("geminiModel") || addon.option("model") || "gemini-3.8-flash-low"
+  readonly property var provider: providers[addon.option("with")] || providers.claude
+  readonly property string geminiModel: addon.option("geminiModel") || "gemini-3.8-flash-low"
   readonly property string claudeModel: addon.option("claudeModel") || "haiku"
   readonly property string codexModel: addon.option("codexModel") || "gpt-5.6-terra"
-  readonly property string model: {
-    if (provider.cli === "claude") return claudeModel
-    if (provider.cli === "codex") return codexModel
-    return geminiModel
-  }
-  readonly property bool menuSearch: addon.option("menuSearch") !== false
 
   property string question: ""
   function ask(text) {
