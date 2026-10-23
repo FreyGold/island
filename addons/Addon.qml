@@ -5,7 +5,9 @@ import QtQuick
 // as Components, which the island makes on each screen:
 //
 //   pill    its live activity, drawn over the whole island while pillShown,
-//           which the island sizes to pillWidth × pillHeight. Show it with
+//           which the island sizes to pillWidth × pillHeight, its corners
+//           rounded to pillRadius when set (for a pill grown too tall to
+//           stay a capsule). Show it with
 //           host.showFeedback("", ms, "addon:" + addon.id), or hold the
 //           resting island with it for as long as `ongoing` is set (over
 //           the media and download pills), the clock kept in its middle.
@@ -46,6 +48,7 @@ Item {
   readonly property bool pillShown: host.addonPill === addonRoot
   property real pillWidth: 280
   property real pillHeight: host.settings.notch ? 40 : 44
+  property real pillRadius: 0
   function pillClicked() { host.view = "controls" }
 
   property var views: []

@@ -650,6 +650,7 @@ Item {
             : root.osdPill ? (root.settings.notch ? 40 : 44)
             : root.view === "rest" ? (root.settings.notch ? 36 : 40) : 52
           property real radiusCap: activeSurface && activeSurface.cornerRadius > 0 ? activeSurface.cornerRadius
+            : root.addonPill && root.addonPill.pillRadius > 0 ? root.addonPill.pillRadius
             : root.surfaceOpen ? 30 : 38
           Behavior on radiusCap {
             MotionAnimation { theme: root.theme; pace: root.surfaceOpen ? "morph" : "collapse"; curve: "morph" }

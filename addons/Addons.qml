@@ -37,6 +37,16 @@ Item {
       options: [
         { key: "urls", label: "Calendars", detail: "ICS links, separated by spaces", type: "text", default: "", placeholder: "https://…/basic.ics" }
       ] },
+    // Before the timer, so a call holds the island over a countdown.
+    { id: "meetings", name: "Meetings", icon: "󰏲", color: "#30d158", default: false, source: "meetings/MeetingsAddon.qml",
+      description: "Your calls on the island, with mute and hang up",
+      options: [
+        { key: "teams", label: "Teams", detail: "Calls and meetings, in the app or a browser", type: "switch", default: true },
+        { key: "zoom", label: "Zoom", detail: "Meetings, in the app or a browser", type: "switch", default: true },
+        { key: "meet", label: "Google Meet", detail: "Meetings in a browser", type: "switch", default: true },
+        { key: "discord", label: "Discord", detail: "Calls and voice channels, in the app or a browser", type: "switch", default: false },
+        { key: "slack", label: "Slack", detail: "Huddles, in the app or a browser", type: "switch", default: true }
+      ] },
     { id: "timer", name: "Timer", icon: "󰔛", color: "#1c1c1e", default: false, source: "timer/TimerAddon.qml",
       iconLayers: [
         { rect: true, color: "#ff9f0a", x: 0.5, y: 0.13, width: 0.2, height: 0.08, radius: 0.5 },
