@@ -188,6 +188,7 @@ Item {
   }
   readonly property int barSize: 0
   readonly property string position: "top"
+  readonly property int topMargin: settings.notch ? 0 : 4
 
   // Auto-hide. The screensaver and fullscreen come live from Wayland and
   // Quickshell's own tracking; only "floating" lives in Hyprland's client
@@ -555,7 +556,7 @@ Item {
           // Once revealed it reaches down past the island, so the gap above
           // the floating pill still counts as hovering and doesn't hide it.
           height: !window.revealArmed ? 0
-            : window.edgeRevealed ? (root.settings.notch ? 0 : 8) + island.height : 4
+            : window.edgeRevealed ? root.topMargin + island.height : 4
           visible: height > 0
 
           HoverHandler {
@@ -644,7 +645,7 @@ Item {
         Rectangle {
           id: island
           x: (parent.width - width) / 2
-          y: window.islandHidden ? -height - 20 : root.settings.notch ? 0 : 8
+          y: window.islandHidden ? -height - 20 : root.topMargin
           Behavior on y { MotionAnimation { theme: root.theme; pace: "standard" } }
           readonly property Item activeSurface: views.surfaceFor(root.view)
           // How much wider than a bare time the chosen clock format is; the

@@ -12,9 +12,9 @@ Text {
   opacity: !host.notificationPill && !host.volumePill && !host.clipboardPill && !host.activityPill && !host.workspacesPill && !host.dictationPill && !(host.addonPill && (host.view === "feedback" || host.addonPill.pillAsks)) && !host.downloadDone && (host.view === "rest" || host.view === "feedback") ? 1 : 0
   width: parent.width - 24
   horizontalAlignment: Text.AlignHCenter
-  // Use the visible glyph bounds to center the clock vertically.
+  // Use the visible glyph bounds with a small downward optical correction.
   anchors.verticalCenterOffset: showingClock && clockInk.tightBoundingRect.height > 0
-    ? Math.round(height / 2 - baselineOffset - clockInk.tightBoundingRect.y - clockInk.tightBoundingRect.height / 2) : 0
+    ? Math.round(height / 2 - baselineOffset - clockInk.tightBoundingRect.y - clockInk.tightBoundingRect.height / 2) + 1 : 0
   elide: Text.ElideRight
   textFormat: Text.PlainText
   // Notifications have their own layout; don't flash their text in
