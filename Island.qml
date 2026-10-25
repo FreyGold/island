@@ -629,18 +629,21 @@ Item {
           }
         }
 
+        DictationBorder {
+          id: dictationBorder
+          x: island.x - padding
+          y: island.y - padding
+          width: island.width + 2 * padding
+          height: island.height + 2 * padding
+          theme: root.theme
+          cornerRadius: island.radius
+          notch: root.settings.notch
+          active: root.dictationPill && root.dictation.recording
+        }
+
         Rectangle {
           id: island
-          x: (parent.width - width) / 2 + dictationWiggle
-          property real dictationWiggle: 0
-          SequentialAnimation on dictationWiggle {
-            running: root.dictationPill && root.dictation.recording
-            loops: Animation.Infinite
-            alwaysRunToEnd: true
-            NumberAnimation { to: -2; duration: 280 * root.theme.motionScale; easing.type: Easing.InOutSine }
-            NumberAnimation { to: 2; duration: 560 * root.theme.motionScale; easing.type: Easing.InOutSine }
-            NumberAnimation { to: 0; duration: 280 * root.theme.motionScale; easing.type: Easing.InOutSine }
-          }
+          x: (parent.width - width) / 2
           y: window.islandHidden ? -height - 20 : root.settings.notch ? 0 : 8
           Behavior on y { MotionAnimation { theme: root.theme; pace: "standard" } }
           readonly property Item activeSurface: views.surfaceFor(root.view)
@@ -685,7 +688,7 @@ Item {
           radius: Math.min(height / 2, root.settings.notch && !root.surfaceOpen ? Math.min(radiusCap, 16) : radiusCap)
           topLeftRadius: root.settings.notch ? 0 : radius
           topRightRadius: root.settings.notch ? 0 : radius
-          scale: root.view === "rest" && clockHover.hovered && root.settings.hoverLift && !root.settings.notch ? 1.018 : 1
+          scale: root.view === "rest" && !root.dictationPill && clockHover.hovered && root.settings.hoverLift && !root.settings.notch ? 1.018 : 1
           Behavior on scale { MotionAnimation { theme: root.theme; pace: "quick" } }
           HoverHandler { id: clockHover; enabled: root.view === "rest" }
           HoverHandler {
@@ -698,7 +701,7 @@ Item {
               }
             }
           }
-          color: root.theme.background
+          color: dictationBorder.visible ? "transparent" : root.theme.background
           clip: true
           // Width, height and corners travel together and settle softly.
           property real animatedWidth: targetWidth
@@ -711,7 +714,6 @@ Item {
           }
           width: Math.max(40, animatedWidth)
           height: Math.max(28, animatedHeight)
-          Behavior on color { MotionColorAnimation { theme: root.theme } }
 
           MouseArea {
             anchors.fill: parent
