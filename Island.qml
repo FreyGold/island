@@ -25,20 +25,27 @@ Item {
 
   readonly property var nowPlaying: nowPlayingData
   NowPlaying { id: nowPlayingData; shell: root.shell; theme: root.theme }
-  readonly property bool mediaPill: view === "rest" && nowPlaying.playing && !setup.needsSetup && settings.mediaPill && !downloadPill && !addons.ongoing && !recordingPill
+  readonly property bool mediaPill: view === "rest" && nowPlaying.playing && !setup.needsSetup && settings.mediaPill && !downloadPill && !addons.ongoing && !recordingPill && !dictationPill
+
+  readonly property var dictation: dictationData
+  Dictation {
+    id: dictationData
+    onRecordingChanged: if (recording) { feedbackTimer.stop(); root.view = "rest" }
+  }
+  readonly property bool dictationPill: view === "rest" && !setup.needsSetup && settings.dictationActivity && dictation.active
 
   // A screen recording holds the resting island over every other pill.
   readonly property var recorder: screenRecorder
   ScreenRecorder { id: screenRecorder }
-  readonly property bool recordingPill: view === "rest" && !setup.needsSetup && settings.screenRecordingActivity && recorder.active
+  readonly property bool recordingPill: view === "rest" && !setup.needsSetup && settings.screenRecordingActivity && recorder.active && !dictationPill
 
   readonly property var downloads: downloadTracker
   DownloadTracker { id: downloadTracker; enabled: root.settings.downloads }
   readonly property var packages: packageTracker
   PackageUpdateTracker { id: packageTracker; enabled: root.settings.systemUpdates }
-  readonly property bool downloadDone: view === "rest" && !setup.needsSetup && !addons.ongoing && !recordingPill
+  readonly property bool downloadDone: view === "rest" && !setup.needsSetup && !addons.ongoing && !recordingPill && !dictationPill
     && (downloads.finishedName !== "" || packages.finishedTitle !== "")
-  readonly property bool downloadActive: view === "rest" && !setup.needsSetup && !addons.ongoing && !recordingPill
+  readonly property bool downloadActive: view === "rest" && !setup.needsSetup && !addons.ongoing && !recordingPill && !dictationPill
     && (downloads.active || packages.active) && !downloadDone
   readonly property bool downloadPill: downloadDone || downloadActive
   Process { id: downloadOpener }
@@ -111,7 +118,7 @@ Item {
   // The addon whose pill is on the island, if any (see addons/Addon.qml):
   // the one shown for a moment, or at rest an ongoing one's.
   readonly property var addonPill: view === "feedback" ? addons.pillFor(feedbackKind)
-    : view === "rest" && !setup.needsSetup && !recordingPill ? addons.ongoing : null
+    : view === "rest" && !setup.needsSetup && !recordingPill && !dictationPill ? addons.ongoing : null
 
   // ---------- Workspace switches ----------
 
@@ -149,7 +156,7 @@ Item {
     id: clipboardWatcher
     home: root.home
     settings: root.settings
-    onCopied: root.showFeedback("", 2200, "clipboard")
+    onCopied: if (!root.dictation.active) root.showFeedback("", 2200, "clipboard")
   }
 
   property bool surfaceContentReady: false
@@ -512,7 +519,7 @@ Item {
         }
 
         readonly property bool isEffectivelyHidden: (root.barHidden || autoHideCondition)
-          && (root.view === "rest" || hasScreensaver)
+          && ((root.view === "rest" && !root.dictationPill) || hasScreensaver)
 
         // Hover at the top edge can bring a hidden island back.
         readonly property bool revealArmed: isEffectivelyHidden && !hasScreensaver
@@ -624,7 +631,16 @@ Item {
 
         Rectangle {
           id: island
-          x: (parent.width - width) / 2
+          x: (parent.width - width) / 2 + dictationWiggle
+          property real dictationWiggle: 0
+          SequentialAnimation on dictationWiggle {
+            running: root.dictationPill && root.dictation.recording
+            loops: Animation.Infinite
+            alwaysRunToEnd: true
+            NumberAnimation { to: -2; duration: 280 * root.theme.motionScale; easing.type: Easing.InOutSine }
+            NumberAnimation { to: 2; duration: 560 * root.theme.motionScale; easing.type: Easing.InOutSine }
+            NumberAnimation { to: 0; duration: 280 * root.theme.motionScale; easing.type: Easing.InOutSine }
+          }
           y: window.islandHidden ? -height - 20 : root.settings.notch ? 0 : 8
           Behavior on y { MotionAnimation { theme: root.theme; pace: "standard" } }
           readonly property Item activeSurface: views.surfaceFor(root.view)
@@ -632,6 +648,7 @@ Item {
           // resting pill and the pills that keep the clock in the middle grow by it.
           readonly property real clockExtra: Math.max(0, Math.ceil(clockMetrics.advanceWidth) + 56 - 100)
           readonly property real targetWidth: activeSurface ? activeSurface.islandWidth
+            : root.dictationPill ? 440
             : root.notificationPill ? 440
             : root.volumePill ? 240
             : root.osdPill ? (root.osdProgress ? 240 : (root.osdMessage.length > 26 ? 340 : 280))
@@ -647,6 +664,7 @@ Item {
             : root.mediaPill ? 240 + clockExtra
             : 100 + clockExtra
           readonly property real targetHeight: activeSurface ? activeSurface.islandHeight
+            : root.dictationPill ? 59 + root.theme.px(20) * 3
             : root.notificationPill ? 84
             : root.activityPill && root.activities.current.kind === "bluetooth" ? 64
             : root.clipboardPill || root.activityPill ? (root.settings.notch ? 40 : 44)
@@ -658,6 +676,7 @@ Item {
             : root.osdPill ? (root.settings.notch ? 40 : 44)
             : root.view === "rest" ? (root.settings.notch ? 36 : 40) : 52
           property real radiusCap: activeSurface && activeSurface.cornerRadius > 0 ? activeSurface.cornerRadius
+            : root.dictationPill ? 28
             : root.addonPill && root.addonPill.pillRadius > 0 ? root.addonPill.pillRadius
             : root.surfaceOpen ? 30 : 38
           Behavior on radiusCap {
@@ -705,6 +724,7 @@ Item {
               else if (root.clipboardPill) root.view = "clipboard"
               else if (root.activityPill) root.view = root.activities.current.kind === "bluetooth" ? "bluetooth"
                 : root.activities.current.kind === "network" && !root.activities.current.wired ? "wifi" : "controls"
+              else if (root.dictationPill) root.dictation.stop()
               else if (root.addonPill) root.addonPill.pillClicked()
               else if (root.recordingPill) root.recorder.stop()
               else if (root.view === "rest" && root.setup.needsSetup) root.setup.pillClicked()
@@ -730,6 +750,8 @@ Item {
           AddonPills { host: root; anchors.fill: parent }
 
           RecordingPill { host: root; anchors.fill: parent }
+
+          DictationPill { host: root; anchors.fill: parent }
 
           MediaPill { host: root; anchors.fill: parent }
 

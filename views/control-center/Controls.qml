@@ -327,27 +327,12 @@ Item {
   // island has closed so the text lands in the focused window; offers
   // Omarchy's installer when voxtype isn't there ---
   property bool voxtypeInstalled: false
-  // "idle", "recording" or "transcribing", followed only while the control
-  // is in the control center.
-  property string dictation: "idle"
+  readonly property string dictation: host.dictation.recording ? "recording"
+    : host.dictation.phase === "transcribing" ? "transcribing" : "idle"
   Process {
     id: voxtypeCheck
     command: ["omarchy-cmd-present", "voxtype"]
     onExited: function(code) { controls.voxtypeInstalled = code === 0 }
-  }
-  Process {
-    command: ["omarchy-voxtype-status"]
-    running: controls.voxtypeInstalled && !!controls.settings.dictateControl
-    onRunningChanged: if (!running) controls.dictation = "idle"
-    stdout: SplitParser {
-      onRead: function(line) {
-        try {
-          var data = JSON.parse(line)
-          var state = String(data.alt || data.class || "idle")
-          controls.dictation = state === "recording" || state === "transcribing" ? state : "idle"
-        } catch (e) {}
-      }
-    }
   }
   Timer {
     id: dictationDelay

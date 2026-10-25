@@ -26,7 +26,8 @@ Item {
     updates: { glyph: "󰏗", glyphColor: positiveColor, label: "12:34", status: "Updating", statusColor: positiveColor },
     network: { glyph: "󰤨", label: "Home", status: "Connected", statusColor: accent },
     battery: { label: "Charging", status: "64%", statusColor: positiveColor },
-    recording: { label: "12:34", status: "01:23", statusColor: recordingColor }
+    recording: { label: "12:34", status: "01:23", statusColor: recordingColor },
+    dictation: { glyph: "󰍬", label: "Your words appear here" }
   })[kind] || ({})
   readonly property string glyph: sample.glyph || ""
 

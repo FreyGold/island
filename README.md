@@ -111,6 +111,19 @@ name, and requested action. Codex still shows its normal approval prompt.
 </details>
 
 <details>
+<summary><b>Can Island show live dictation?</b></summary>
+
+<br>
+
+Island shows the growing VoxType transcript while you speak. Ctrl + Super + X
+starts and stops dictation. The full text goes to the clipboard when you stop.
+Open Settings → Live Activities → Dictation to show or hide the activity.
+
+The [Groq bridge setup](integrations/voxtype/README.md) uses short audio chunks
+for live updates with Groq Whisper. Keep API keys in the local environment file.
+</details>
+
+<details>
 <summary><b>How do I uninstall it?</b></summary>
 <br>
 
