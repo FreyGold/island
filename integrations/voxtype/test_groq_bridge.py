@@ -8,10 +8,12 @@ import threading
 import unittest
 import urllib.error
 import wave
+from email.parser import BytesParser
+from email.policy import default
 from pathlib import Path
 from unittest.mock import patch
 
-from groq_bridge import Handler, ThreadingHTTPServer, Transcript, has_speech, merge_text, transcription_text, trim_silence, filter_standalone_thanks
+from groq_bridge import Handler, ThreadingHTTPServer, Transcript, finalize, groq_form, has_speech, merge_text, transcription_text, trim_silence, filter_standalone_thanks
 
 
 class TranscriptTests(unittest.TestCase):
@@ -45,8 +47,34 @@ class TranscriptTests(unittest.TestCase):
         self.assertEqual(self.transcript.path.stat().st_mode & 0o777, 0o600)
 
     def test_overlap_keeps_unicode_and_punctuation(self):
-        self.assertEqual(merge_text("Hello, world!", "WORLD here."), "Hello, world! here.")
+        self.assertEqual(merge_text("Hello, world!", "WORLD here."), "Hello, world here.")
         self.assertEqual(merge_text("مرحبا بك", "بك اليوم"), "مرحبا بك اليوم")
+
+    def test_new_context_corrects_an_early_sentence_end(self):
+        for punctuation in (".", "!", "?"):
+            with self.subTest(punctuation=punctuation):
+                self.assertEqual(
+                    merge_text("I want to understand the importance" + punctuation, "The importance of this change."),
+                    "I want to understand the importance of this change.",
+                )
+
+    def test_real_question_and_proper_name_are_kept(self):
+        self.assertEqual(merge_text("How are you?", "Are you? I am fine."), "How are you? I am fine.")
+        self.assertEqual(merge_text("I use VoxType.", "Voxtype to record."), "I use VoxType to record.")
+
+    def test_context_uses_only_earlier_results_in_the_same_session(self):
+        first, second, third = (self.transcript.reserve() for _ in range(3))
+        self.transcript.complete(third, "A future result.")
+        self.transcript.complete(first, "Some earlier words.")
+        self.assertEqual(self.transcript.context_for(second), "Some earlier words.")
+        self.transcript.begin()
+        self.assertEqual(self.transcript.context_for(second), "")
+
+    def test_incomplete_or_failed_session_keeps_native_output(self):
+        ticket = self.transcript.reserve()
+        self.assertEqual(self.transcript.finalize("Native text."), "Native text.")
+        self.transcript.complete(ticket, "Preview text.", error="Request failed.")
+        self.assertEqual(self.transcript.finalize("Native text."), "Native text.")
 
 
 class EndpointTests(unittest.TestCase):
@@ -86,6 +114,21 @@ class EndpointTests(unittest.TestCase):
 
     def test_endpoint_requires_authorization(self):
         self.assertEqual(self.request("/session/begin", b"{}", authorized=False)[0], 401)
+        self.assertEqual(self.request("/session/finalize", b'{"text":"hello"}', authorized=False)[0], 401)
+
+    def test_final_output_uses_corrected_preview(self):
+        first, second = self.server.transcript.reserve(), self.server.transcript.reserve()
+        self.server.transcript.complete(first, "I want the sentence.")
+        self.server.transcript.complete(second, "The sentence to continue.")
+        native = "I want the sentence. The sentence to continue."
+        port = self.server.server_address[1]
+        self.assertEqual(finalize(native, "test-key", port), "I want the sentence to continue.")
+        self.server.transcript.finish("An earlier dictation.")
+        self.assertEqual(finalize(native, "test-key", port), native)
+
+    def test_finalize_failure_keeps_original_input(self):
+        with patch("groq_bridge.urllib.request.urlopen", side_effect=urllib.error.URLError("offline")):
+            self.assertEqual(finalize("Keep this dictation.", "test-key", 1), "Keep this dictation.")
 
     def test_silence_uses_no_cloud_request(self):
         body = self.audio_body()
@@ -103,6 +146,23 @@ class EndpointTests(unittest.TestCase):
             self.assertEqual(self.server.transcript.value["text"], "A live sentence.")
             self.assertEqual(upstream.call_args.args[0].full_url, "https://api.groq.com/openai/v1/audio/transcriptions")
             self.assertIn(b"verbose_json", upstream.call_args.args[0].data)
+
+    def test_cloud_request_includes_recent_context(self):
+        first = self.server.transcript.reserve()
+        self.server.transcript.complete(first, "The Island plugin uses VoxType.")
+        with patch("groq_bridge.has_speech", return_value=True), patch("groq_bridge.urllib.request.urlopen", return_value=io.BytesIO(b'{"text":"VoxType to record."}')) as upstream:
+            self.request("/v1/audio/transcriptions", self.audio_body(600), content_type="multipart/form-data; boundary=test")
+            request = upstream.call_args.args[0]
+            message = BytesParser(policy=default).parsebytes(("Content-Type: " + request.headers["Content-type"] + "\r\n\r\n").encode() + request.data)
+            prompts = [part.get_payload(decode=True).decode() for part in message.iter_parts() if part.get_param("name", header="content-disposition") == "prompt"]
+            self.assertEqual(prompts, ["The Island plugin uses VoxType."])
+
+    def test_recent_context_keeps_the_configured_prompt(self):
+        body = self.audio_body()[:-len(b"--test--\r\n")] + b'--test\r\nContent-Disposition: form-data; name="prompt"\r\n\r\nIsland, VoxType.\r\n--test--\r\n'
+        data, content_type = groq_form(body, "multipart/form-data; boundary=test", "Some recent words.")
+        message = BytesParser(policy=default).parsebytes(("Content-Type: " + content_type + "\r\n\r\n").encode() + data)
+        prompts = [part.get_payload(decode=True).decode() for part in message.iter_parts() if part.get_param("name", header="content-disposition") == "prompt"]
+        self.assertEqual(prompts, ["Island, VoxType.\nSome recent words."])
 
     def test_rate_limit_has_a_clear_message(self):
         failure = urllib.error.HTTPError("https://api.groq.com", 429, "rate limit", {}, None)

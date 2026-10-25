@@ -11,6 +11,7 @@ import os
 import re
 import socket
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -39,14 +40,22 @@ def runtime_dir():
 
 
 def merge_text(left, right):
-    """Remove words repeated by VoxType's overlapping audio chunks."""
+    """Use the newer chunk to correct words at the shared audio boundary."""
     old, new = left.split(), right.split()
     normalize = lambda word: re.sub(r"[^\w]", "", word.casefold())
     overlap = 0
-    for count in range(1, min(8, len(old), len(new)) + 1):
+    for count in range(1, min(64, len(old), len(new)) + 1):
         if [normalize(w) for w in old[-count:]] == [normalize(w) for w in new[:count]]:
             overlap = count
-    return " ".join(old + new[overlap:])
+    if not overlap:
+        return " ".join(old + new)
+    for index in range(overlap):
+        # Keep established letter case and use the newer punctuation.
+        previous = re.fullmatch(r"(\W*)(.*?\w)(\W*)", old[-overlap + index])
+        current = re.fullmatch(r"(\W*)(.*?\w)(\W*)", new[index])
+        if previous and current and previous[2].casefold() == current[2].casefold():
+            new[index] = current[1] + previous[2] + current[3]
+    return " ".join(old[:-overlap] + new)
 
 
 def voice_activity(data):
@@ -120,13 +129,14 @@ def configured_overlap():
         return 0.0
 
 
-def groq_form(body, content_type):
-    """Request segment confidence data while preserving the uploaded audio."""
+def groq_form(body, content_type, context=""):
+    """Add recent text and request confidence data for the uploaded audio."""
     message = BytesParser(policy=email.policy.default).parsebytes(
         ("Content-Type: " + content_type + "\r\nMIME-Version: 1.0\r\n\r\n").encode() + body
     )
     boundary = "IslandGroq" + uuid.uuid4().hex
     parts = []
+    prompt = ""
     allowed = {"file", "model", "language", "prompt"}
     for part in message.iter_parts():
         name = part.get_param("name", header="content-disposition")
@@ -136,9 +146,15 @@ def groq_form(body, content_type):
         if name == "file":
             disposition += '; filename="audio.wav"\r\nContent-Type: audio/wav'
         payload = part.get_payload(decode=True) or b""
+        if name == "prompt":
+            prompt = payload.decode("utf-8", "replace")
+            continue
         if name == "file":
             payload = trim_silence(payload)
         parts.append(f"--{boundary}\r\n{disposition}\r\n\r\n".encode() + payload + b"\r\n")
+    prompt = "\n".join(value for value in (prompt, context) if value)
+    if prompt:
+        parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="prompt"\r\n\r\n'.encode() + prompt.encode() + b"\r\n")
     for name, value in (("response_format", "verbose_json"), ("temperature", "0")):
         parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"\r\n\r\n{value}\r\n'.encode())
     parts.append(f"--{boundary}--\r\n".encode())
@@ -229,6 +245,24 @@ class Transcript:
             active = self.value["phase"] in ("recording", "transcribing")
             return self.overlap_seconds if active and ticket[0] == self.generation and ticket[1] > 0 else 0.0
 
+    def context_for(self, ticket):
+        with self.lock:
+            if ticket[0] != self.generation or self.value["phase"] not in ("recording", "transcribing"):
+                return ""
+            combined = ""
+            for number in range(ticket[1]):
+                if number not in self.results:
+                    break
+                combined = merge_text(combined, self.results[number])
+            return combined.encode("utf-8")[-480:].decode("utf-8", "ignore")
+
+    def finalize(self, fallback):
+        with self.lock:
+            ready = (self.value["phase"] in ("recording", "transcribing")
+                     and self.sequence > 0 and len(self.results) == self.sequence
+                     and self.value["pending"] == 0 and not self.value["error"])
+            return self.value["text"] if ready and self.value["text"] else fallback
+
     def complete(self, ticket, text="", error=""):
         with self.lock:
             generation, index = ticket
@@ -315,7 +349,7 @@ class Handler(BaseHTTPRequestHandler):
             transcript.begin()
             self.reply(200, {"ok": True})
             return
-        if self.path == "/session/finish":
+        if self.path in ("/session/finish", "/session/finalize"):
             try:
                 text = json.loads(body).get("text", "")
                 if not isinstance(text, str):
@@ -323,8 +357,11 @@ class Handler(BaseHTTPRequestHandler):
             except (ValueError, AttributeError):
                 self.reply(400, {"error": "Invalid transcript"})
                 return
-            transcript.finish(text)
-            self.reply(200, {"ok": True})
+            if self.path == "/session/finalize":
+                self.reply(200, {"text": transcript.finalize(text)})
+            else:
+                transcript.finish(text)
+                self.reply(200, {"ok": True})
             return
         if self.path != "/v1/audio/transcriptions":
             self.reply(404, {"error": "Unknown endpoint"})
@@ -338,7 +375,7 @@ class Handler(BaseHTTPRequestHandler):
             transcript.complete(ticket)
             self.reply(200, {"text": ""})
             return
-        body, content_type = groq_form(body, content_type)
+        body, content_type = groq_form(body, content_type, transcript.context_for(ticket))
         request = urllib.request.Request(GROQ_URL, data=body, headers={
             "Authorization": expected, "Content-Type": content_type,
             "User-Agent": "Island-Voxtype/1.0",
@@ -383,14 +420,31 @@ def hook(action, api_key, port):
     return 0
 
 
+def finalize(text, api_key, port):
+    """Use the joined preview for output, or keep the input on failure."""
+    request = urllib.request.Request(
+        f"http://127.0.0.1:{port}/session/finalize", data=json.dumps({"text": text}).encode(),
+        headers={"Authorization": "Bearer " + api_key, "Content-Type": "application/json"},
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=2) as response:
+            value = json.load(response).get("text")
+        return value if isinstance(value, str) and value else text
+    except (urllib.error.URLError, OSError, ValueError, AttributeError):
+        return text
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=("serve", "begin", "finish"))
+    parser.add_argument("action", choices=("serve", "begin", "finish", "finalize"))
     parser.add_argument("--port", type=int, default=PORT)
     args = parser.parse_args()
     api_key = os.environ.get("GROQ_API_KEY", "")
     if not api_key:
         parser.exit(1, "The Groq API key is not configured.\n")
+    if args.action == "finalize":
+        sys.stdout.write(finalize(sys.stdin.read(), api_key, args.port))
+        return 0
     if args.action != "serve":
         return hook(args.action, api_key, args.port)
     transcript = Transcript(runtime_dir())
