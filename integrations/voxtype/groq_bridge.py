@@ -14,6 +14,7 @@ import subprocess
 import tempfile
 import threading
 import time
+import tomllib
 import urllib.error
 import urllib.request
 import uuid
@@ -48,8 +49,28 @@ def merge_text(left, right):
     return " ".join(old + new[overlap:])
 
 
-def has_speech(body, content_type):
-    """Reject silence and background noise before they use an API request."""
+def voice_activity(data):
+    """Return the WAV format, samples, and speech flags for 20 ms frames."""
+    with wave.open(io.BytesIO(data), "rb") as audio:
+        if audio.getsampwidth() != 2:
+            return None
+        rate, channels = audio.getframerate(), audio.getnchannels()
+        raw = audio.readframes(audio.getnframes())
+    samples = array.array("h", raw)
+    if os.sys.byteorder != "little":
+        samples.byteswap()
+    frame = max(1, int(rate * channels * 0.02))
+    detector = webrtcvad.Vad(2) if webrtcvad and channels == 1 and rate in (8000, 16000, 32000, 48000) else None
+    flags = []
+    for start in range(0, len(samples) - frame + 1, frame):
+        block = samples[start:start + frame]
+        rms = (sum(s * s for s in block) / frame) ** 0.5 / 32768
+        flags.append(rms >= 0.001 and (detector is None or detector.is_speech(raw[start * 2:(start + frame) * 2], rate)))
+    return rate, channels, raw, flags
+
+
+def has_speech(body, content_type, skip_seconds=0):
+    """Require new speech after any overlap with the previous audio chunk."""
     try:
         message = BytesParser(policy=email.policy.default).parsebytes(
             ("Content-Type: " + content_type + "\r\nMIME-Version: 1.0\r\n\r\n").encode() + body
@@ -57,28 +78,46 @@ def has_speech(body, content_type):
         for part in message.iter_parts():
             if part.get_param("name", header="content-disposition") != "file":
                 continue
-            with wave.open(io.BytesIO(part.get_payload(decode=True)), "rb") as audio:
-                if audio.getsampwidth() != 2:
-                    return True
-                raw = audio.readframes(audio.getnframes())
-                samples = array.array("h", raw)
-                if os.sys.byteorder != "little":
-                    samples.byteswap()
-                frame = max(1, int(audio.getframerate() * audio.getnchannels() * 0.02))
-                detector = webrtcvad.Vad(2) if webrtcvad and audio.getnchannels() == 1 and audio.getframerate() in (8000, 16000, 32000, 48000) else None
-                loud = 0
-                frames = len(samples) // frame
-                for start in range(0, frames * frame, frame):
-                    block = samples[start:start + frame]
-                    rms = (sum(s * s for s in block) / max(1, len(block))) ** 0.5 / 32768
-                    if rms < 0.001:
-                        continue
-                    if detector is None or detector.is_speech(raw[start * 2:(start + frame) * 2], audio.getframerate()):
-                        loud += 1
-                return loud >= max(6, int(frames * 0.06))
+            activity = voice_activity(part.get_payload(decode=True))
+            if activity is None:
+                return True
+            flags = activity[3][int(skip_seconds / 0.02):]
+            return sum(flags) >= max(6, int(len(flags) * 0.06))
     except (ValueError, TypeError, AttributeError, wave.Error, EOFError):
         pass
     return True
+
+
+def trim_silence(data):
+    """Keep speech with short padding and remove long silent ends."""
+    try:
+        activity = voice_activity(data)
+        if activity is None:
+            return data
+        rate, channels, raw, flags = activity
+        voiced = [index for index, flag in enumerate(flags) if flag]
+        if not voiced:
+            return data
+        start = max(0, int((voiced[0] * 0.02 - 0.18) * rate))
+        end = min(len(raw) // (channels * 2), int(((voiced[-1] + 1) * 0.02 + 0.24) * rate))
+        output = io.BytesIO()
+        with wave.open(output, "wb") as audio:
+            audio.setnchannels(channels)
+            audio.setsampwidth(2)
+            audio.setframerate(rate)
+            audio.writeframes(raw[start * channels * 2:end * channels * 2])
+        return output.getvalue()
+    except (ValueError, TypeError, wave.Error, EOFError):
+        return data
+
+
+def configured_overlap():
+    try:
+        path = Path(os.environ.get("XDG_CONFIG_HOME", str(Path.home() / ".config"))) / "voxtype/config.toml"
+        settings = tomllib.loads(path.read_text()).get("whisper", {})
+        return max(0.0, float(settings.get("eager_overlap_secs", 0.5))) if settings.get("eager_processing") else 0.0
+    except (OSError, ValueError, TypeError):
+        return 0.0
 
 
 def groq_form(body, content_type):
@@ -96,7 +135,10 @@ def groq_form(body, content_type):
         disposition = f'Content-Disposition: form-data; name="{name}"'
         if name == "file":
             disposition += '; filename="audio.wav"\r\nContent-Type: audio/wav'
-        parts.append(f"--{boundary}\r\n{disposition}\r\n\r\n".encode() + (part.get_payload(decode=True) or b"") + b"\r\n")
+        payload = part.get_payload(decode=True) or b""
+        if name == "file":
+            payload = trim_silence(payload)
+        parts.append(f"--{boundary}\r\n{disposition}\r\n\r\n".encode() + payload + b"\r\n")
     for name, value in (("response_format", "verbose_json"), ("temperature", "0")):
         parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"\r\n\r\n{value}\r\n'.encode())
     parts.append(f"--{boundary}--\r\n".encode())
@@ -142,6 +184,7 @@ class Transcript:
         self.generation = 0
         self.sequence = 0
         self.results = {}
+        self.overlap_seconds = 0.0
         self.value = {"phase": "idle", "text": "", "startedAt": 0, "error": "", "pending": 0}
 
     def publish(self):
@@ -161,6 +204,7 @@ class Transcript:
             self.generation += 1
             self.sequence = 0
             self.results = {}
+            self.overlap_seconds = configured_overlap()
             self.value = {"phase": "recording", "text": "", "startedAt": int(time.time() * 1000), "error": "", "pending": 0}
             self.publish()
 
@@ -172,6 +216,11 @@ class Transcript:
                 self.value["pending"] += 1
                 self.publish()
             return ticket
+
+    def overlap_for(self, ticket):
+        with self.lock:
+            active = self.value["phase"] in ("recording", "transcribing")
+            return self.overlap_seconds if active and ticket[0] == self.generation and ticket[1] > 0 else 0.0
 
     def complete(self, ticket, text="", error=""):
         with self.lock:
@@ -278,7 +327,7 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(400, {"error": "Audio must use multipart form data"})
             return
         ticket = transcript.reserve()
-        if not has_speech(body, content_type):
+        if not has_speech(body, content_type, transcript.overlap_for(ticket)):
             transcript.complete(ticket)
             self.reply(200, {"text": ""})
             return

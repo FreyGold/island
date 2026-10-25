@@ -21,8 +21,10 @@ configuration are outside this repository.
 
 The `island-voxtype.service` user service runs `groq_bridge.py serve` with a
 Python environment that contains `requirements.txt`. WebRTC voice detection
-rejects silence and background noise. Groq segment confidence checks also
-reject uncertain text from silent audio.
+rejects silence and background noise. The bridge trims long silent ends before
+upload. Later chunks must contain speech beyond the overlap with the previous
+chunk. A repeated tail with no new speech does not make another API request.
+Groq segment confidence checks also reject uncertain text from silent audio.
 
 The VoxType service loads the same environment file and starts after the bridge.
 VoxType uses these settings:

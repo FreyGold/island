@@ -11,7 +11,7 @@ import wave
 from pathlib import Path
 from unittest.mock import patch
 
-from groq_bridge import Handler, ThreadingHTTPServer, Transcript, has_speech, merge_text, transcription_text
+from groq_bridge import Handler, ThreadingHTTPServer, Transcript, has_speech, merge_text, transcription_text, trim_silence
 
 
 class TranscriptTests(unittest.TestCase):
@@ -112,8 +112,56 @@ class EndpointTests(unittest.TestCase):
             self.assertEqual(value["error"], "Groq rate limit reached. Try again shortly.")
             self.assertEqual(self.server.transcript.value["pending"], 0)
 
+    def test_repeated_tail_audio_does_not_call_groq(self):
+        self.server.transcript.overlap_seconds = 0.5
+        previous = self.server.transcript.reserve()
+        self.server.transcript.complete(previous, "Previous sentence.")
+        body = SpeechFilterTests.multipart(SpeechFilterTests.speech_audio(0, 20, 180))
+        with patch("groq_bridge.webrtcvad.Vad") as detector, patch("groq_bridge.urllib.request.urlopen") as upstream:
+            detector.return_value.is_speech.return_value = True
+            self.assertEqual(self.request("/v1/audio/transcriptions", body, content_type="multipart/form-data; boundary=test"), (200, {"text": ""}))
+            upstream.assert_not_called()
+        self.assertEqual(self.server.transcript.value["text"], "Previous sentence.")
+
 
 class SpeechFilterTests(unittest.TestCase):
+    @staticmethod
+    def speech_audio(leading_frames, speech_frames, trailing_frames):
+        audio = io.BytesIO()
+        raw = b"\0\0" * (320 * leading_frames) + (600).to_bytes(2, "little", signed=True) * (320 * speech_frames) + b"\0\0" * (320 * trailing_frames)
+        with wave.open(audio, "wb") as stream:
+            stream.setnchannels(1)
+            stream.setsampwidth(2)
+            stream.setframerate(16000)
+            stream.writeframes(raw)
+        return audio.getvalue()
+
+    @staticmethod
+    def multipart(audio):
+        return b'--test\r\nContent-Disposition: form-data; name="file"; filename="audio.wav"\r\nContent-Type: audio/wav\r\n\r\n' + audio + b"\r\n--test--\r\n"
+
+    def test_overlap_alone_is_not_new_speech(self):
+        body = self.multipart(self.speech_audio(0, 20, 180))
+        with patch("groq_bridge.webrtcvad.Vad") as detector:
+            detector.return_value.is_speech.return_value = True
+            self.assertTrue(has_speech(body, "multipart/form-data; boundary=test"))
+            self.assertFalse(has_speech(body, "multipart/form-data; boundary=test", 0.5))
+
+    def test_new_speech_after_overlap_is_kept(self):
+        body = self.multipart(self.speech_audio(25, 25, 150))
+        with patch("groq_bridge.webrtcvad.Vad") as detector:
+            detector.return_value.is_speech.return_value = True
+            self.assertTrue(has_speech(body, "multipart/form-data; boundary=test", 0.5))
+
+    def test_long_silent_ends_are_trimmed_with_padding(self):
+        audio = self.speech_audio(50, 25, 125)
+        with patch("groq_bridge.webrtcvad.Vad") as detector:
+            detector.return_value.is_speech.return_value = True
+            trimmed = trim_silence(audio)
+        with wave.open(io.BytesIO(trimmed), "rb") as stream:
+            duration = stream.getnframes() / stream.getframerate()
+        self.assertAlmostEqual(duration, 0.18 + 0.5 + 0.24, places=3)
+
     def test_background_noise_does_not_count_as_speech(self):
         self.assertFalse(has_speech(EndpointTests.audio_body(600), "multipart/form-data; boundary=test"))
 
