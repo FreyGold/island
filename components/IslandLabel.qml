@@ -14,7 +14,7 @@ Text {
   horizontalAlignment: Text.AlignHCenter
   // Use the visible glyph bounds with a small downward optical correction.
   anchors.verticalCenterOffset: showingClock && clockInk.tightBoundingRect.height > 0
-    ? Math.round(height / 2 - baselineOffset - clockInk.tightBoundingRect.y - clockInk.tightBoundingRect.height / 2) + 1 : 0
+    ? Math.round(height / 2 - baselineOffset - clockInk.tightBoundingRect.y - clockInk.tightBoundingRect.height / 2) + 0.5 : 0
   elide: Text.ElideRight
   textFormat: Text.PlainText
   // Notifications have their own layout; don't flash their text in
