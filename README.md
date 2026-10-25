@@ -21,6 +21,10 @@ omarchy bar use guilhermerisu.island
 <a id="features"></a>
 <h2 align="center">Features</h2>
 
+Left-click a notification to run its action. For a crash notice, this opens
+Omarchy's diagnosis session. Right-click to dismiss the notice without running
+its action.
+
 <p align="center">
   <img src="assets/readme/activities.webp" alt="Live activities: the resting island with music, a download and a system update in progress, Claude Code at work, screen recording, Bluetooth headphones, an upcoming event, a call, a timer, volume, workspaces, low battery, notifications from an app and from Claude Code, copied text, Wi-Fi, charging, and a finished download and update" width="100%">
 </p>

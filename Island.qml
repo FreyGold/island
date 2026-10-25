@@ -383,10 +383,15 @@ Item {
     showFeedback("", duration, "notification")
   }
 
-  function dismissPillNotification() {
+  function handlePillNotification(activate) {
     var row = notifications.last
     feedbackKind = ""
     view = "rest"
+    if (!row) return
+    if (!activate) {
+      notifications.command("dismissKey", row)
+      return
+    }
     // Local Codex permission notifications include "Workspace N · session"
     // as their first body line. A click should return to that terminal.
     if (row && notifications.agent(row) === "codex"
@@ -394,8 +399,10 @@ Item {
       var codex = addons.root("codex")
       var context = String(row.body || "").split("\n")[0]
       if (codex) codex.focusSession(context)
+      notifications.command("dismissKey", row)
+      return
     }
-    if (row) notifications.command("dismissKey", row)
+    notifications.command("invokeKey", row)
   }
 
   property string menuRoute: "root"
@@ -719,11 +726,13 @@ Item {
           MouseArea {
             anchors.fill: parent
             enabled: root.view === "rest" || root.view === "feedback"
+            acceptedButtons: root.notificationPill ? Qt.LeftButton | Qt.RightButton : Qt.LeftButton
             onClicked: function(mouse) {
               feedbackTimer.stop()
+              if (root.notificationPill && mouse.button === Qt.RightButton) { root.handlePillNotification(false); return }
               if (root.notificationPill && root.notifications.last && root.notifications.last.islandUpdate) root.updateIsland()
               else if (root.notificationPill && root.notifications.last && root.notifications.last.islandSetupRetry) { root.feedbackKind = ""; root.view = "rest"; root.setup.install() }
-              else if (root.notificationPill) root.dismissPillNotification()
+              else if (root.notificationPill) root.handlePillNotification(true)
               else if (root.clipboardPill) root.view = "clipboard"
               else if (root.activityPill) root.view = root.activities.current.kind === "bluetooth" ? "bluetooth"
                 : root.activities.current.kind === "network" && !root.activities.current.wired ? "wifi" : "controls"
