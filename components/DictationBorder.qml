@@ -73,7 +73,7 @@ Canvas {
         + 0.30 * Math.sin(t * Math.PI * 18 + phase * 1.1)
         + 0.20 * Math.sin(t * Math.PI * 6 - phase * 0.8)
       var taper = notch ? Math.min(1, Math.max(0, p.y / 18)) : 1
-      var offset = 3.2 * strength * ripple * taper
+      var offset = 1.2 * strength * ripple * taper
       points.push({ x: padding + p.x + p.nx * offset, y: padding + p.y + p.ny * offset })
     }
     var last = points[points.length - 1], first = points[0]
