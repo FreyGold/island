@@ -97,8 +97,24 @@ top edge of the screen.
 </details>
 
 <details>
+<summary><b>Can Island show Codex CLI sessions?</b></summary>
+
+<br>
+
+Codex Sessions lists active local Codex CLI sessions from every workspace. It
+shows the workspace number. It sends notices when a session finishes or needs a
+reply. Set its shortcut in **Settings → Keybinds**.
+
+Permission notices need the Codex `PermissionRequest` hook. The hook calls
+`addons/codex/codex-permission-notify.py`. It reports the workspace, session
+name, and requested action. Codex still shows its normal approval prompt.
+</details>
+
+<details>
 <summary><b>How do I uninstall it?</b></summary>
 <br>
+
+## Uninstall
 
 ```sh
 bash ~/.config/omarchy/plugins/guilhermerisu.island/companion/uninstall.sh

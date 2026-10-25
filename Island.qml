@@ -379,6 +379,14 @@ Item {
     var row = notifications.last
     feedbackKind = ""
     view = "rest"
+    // Local Codex permission notifications include "Workspace N · session"
+    // as their first body line. A click should return to that terminal.
+    if (row && notifications.agent(row) === "codex"
+        && /^Codex needs (confirmation|your reply)$/.test(String(row.summary || ""))) {
+      var codex = addons.root("codex")
+      var context = String(row.body || "").split("\n")[0]
+      if (codex) codex.focusSession(context)
+    }
     if (row) notifications.command("dismissKey", row)
   }
 
@@ -629,7 +637,7 @@ Item {
             : root.osdPill ? (root.osdProgress ? 240 : (root.osdMessage.length > 26 ? 340 : 280))
             : root.activityPill && root.activities.current.kind === "bluetooth" ? 360
             : root.clipboardPill || root.activityPill ? 320
-            : root.workspacesPill ? root.workspaceIds.length * 24 + 42
+            : root.workspacesPill ? root.workspaceIds.length * 16 + 12
             : root.recordingPill ? 240 + clockExtra
             : root.addonPill ? root.addonPill.pillWidth + (root.view === "feedback" || root.addonPill.pillAsks ? 0 : clockExtra)
             : root.view === "feedback" ? 280

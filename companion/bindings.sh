@@ -38,6 +38,7 @@ catalog=(
   'weather|Weather|show weather|||weather'
   'calendar|Calendar|show calendar|||calendar'
   'timer|Timer|show timer|||timer'
+  'codexSessions|Codex Sessions|show codex-sessions|||codex'
   'stats|System Stats|addonSettings stats|||stats'
   'agents|Agents|addonSettings agents|||agents'
   'displays|Displays|addonSettings displays|||displays'

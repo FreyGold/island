@@ -15,6 +15,11 @@ Item {
   onRowChanged: imageFailed = false
   readonly property string iconSource: host.notifications.iconSource(host.notifications.last, imageFailed)
   readonly property var brand: host.notifications.brand(row)
+  readonly property bool codexApproval: host.notifications.agent(row) === "codex"
+    && /^Codex needs (confirmation|your reply)$/.test(host.notifications.title(row))
+  readonly property var bodyLines: String(row.body || "").split("\n")
+  readonly property string contextLine: bodyLines.length > 1 ? bodyLines[0] : ""
+  readonly property string detailLine: bodyLines.length > 1 ? bodyLines.slice(1).join(" ") : String(row.body || row.app || "")
 
     opacity: host.notificationPill ? 1 : 0
   visible: opacity > 0.01
@@ -60,12 +65,13 @@ Item {
   }
 
   Column {
+    id: content
     anchors.left: appTile.right
     anchors.leftMargin: 12
     anchors.right: parent.right
     anchors.rightMargin: 30
     anchors.verticalCenter: parent.verticalCenter
-    spacing: 2
+    spacing: codexApproval ? 1 : 2
     Item {
       width: parent.width
       height: title.height
@@ -99,13 +105,89 @@ Item {
     Text {
       width: parent.width
       text: String(pill.row.body || pill.row.app || "")
-      visible: text !== ""
+      visible: !codexApproval && text !== ""
       textFormat: Text.PlainText
       elide: Text.ElideRight
       color: Qt.rgba(1, 1, 1, 0.72)
       font.family: host.theme.textFontFamily
       font.pixelSize: host.theme.px(13)
       font.letterSpacing: -0.1
+    }
+
+    // A permission request has two useful facts after its title: where the
+    // session is, and what Codex wants to do. Keep them visually separate so
+    // the command reads as a request, not a third paragraph of plain text.
+    Item {
+      visible: codexApproval && contextLine !== ""
+      width: parent.width
+      height: 16
+      Rectangle {
+        id: contextDot
+        anchors.left: parent.left
+        anchors.verticalCenter: parent.verticalCenter
+        width: 5
+        height: 5
+        radius: width / 2
+        color: "#8b8cf7"
+      }
+      Text {
+        anchors.left: contextDot.right
+        anchors.leftMargin: 7
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        text: contextLine
+        textFormat: Text.PlainText
+        elide: Text.ElideRight
+        color: Qt.rgba(1, 1, 1, 0.68)
+        font.family: host.theme.textFontFamily
+        font.pixelSize: host.theme.px(12)
+        font.weight: Font.Medium
+        font.letterSpacing: -0.1
+      }
+    }
+    Item {
+      id: approvalDetail
+      visible: codexApproval && detailLine !== ""
+      width: parent.width
+      height: 17
+      clip: true
+      Rectangle {
+        anchors.left: parent.left
+        anchors.top: approvalText.top
+        width: 2
+        height: approvalText.height
+        radius: 1
+        color: "#8b8cf7"
+      }
+      Text {
+        id: approvalText
+        anchors.left: parent.left
+        anchors.leftMargin: 8
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        text: detailLine
+        textFormat: Text.PlainText
+        elide: Text.ElideRight
+        color: Qt.rgba(1, 1, 1, 0.84)
+        font.family: host.theme.textFontFamily
+        font.pixelSize: host.theme.px(12)
+        font.weight: Font.Normal
+        font.letterSpacing: -0.1
+      }
+      // QML's elide is still used for layout. This mask makes the last words
+      // dissolve into the island instead of ending on a hard glyph edge.
+      Rectangle {
+        anchors.right: parent.right
+        anchors.verticalCenter: parent.verticalCenter
+        width: 34
+        height: parent.height
+        color: "transparent"
+        gradient: Gradient {
+          orientation: Gradient.Horizontal
+          GradientStop { position: 0; color: "transparent" }
+          GradientStop { position: 1; color: host.theme.background }
+        }
+      }
     }
   }
 }

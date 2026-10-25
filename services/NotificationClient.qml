@@ -45,7 +45,8 @@ Item {
     if (summary === "Claude Code") return "claude"
     if (summary === "Gemini" || summary === "Antigravity" || summary === "agy") return "gemini"
     var fromTerminal = /ghostty|kitty|alacritty|foot|wezterm/i.test(String(row.appIcon || "") + " " + String(row.app || ""))
-    if (summary === "Codex" || (fromTerminal && /^(Ghostty|kitty|Alacritty|foot|WezTerm)$/.test(summary))) return "codex"
+    if (/^Codex(?:\s|$)/.test(summary)
+        || (fromTerminal && /^(Ghostty|kitty|Alacritty|foot|WezTerm)$/.test(summary))) return "codex"
     return ""
   }
   readonly property var brands: ({
@@ -60,7 +61,7 @@ Item {
   }
   function title(row) {
     if (!row) return "Notification"
-    if (agent(row) === "codex") return "Codex"
+    if (agent(row) === "codex") return String(row.summary || "Codex")
     if (agent(row) === "gemini") return "Gemini"
     return String(row.summary || row.app || "Notification")
   }

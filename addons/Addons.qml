@@ -110,6 +110,9 @@ Item {
         }, []))
         .concat([{ rect: true, color: "#a9bcc2", x: 0.5, y: 0.69, width: 0.5, height: 0.09, radius: 0.4 }]),
       description: "Show the layout on the pill when it changes" },
+    { id: "codex", name: "Codex Sessions", icon: "", color: "#f2f2f2", default: true, source: "codex/CodexAddon.qml",
+      iconLayers: [{ glyph: "", color: "#000000", x: 0.5, y: 0.5, size: 0.62 }],
+      description: "Active Codex CLI sessions and alerts" },
     // All Models' robot; its Settings pane takes the picked agent's logo.
     { id: "agents", name: "Agents", icon: "󰚩", color: "#5e5ce6", default: false, source: "agents/AgentsAddon.qml",
       description: "Your coding agents' limits and tokens by day, and Claude Code at work on the island",
