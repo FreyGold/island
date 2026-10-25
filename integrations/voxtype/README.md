@@ -47,7 +47,8 @@ VoxType after a configuration change.
 
 The bridge listens on localhost and requires the key for each request. It
 stores the preview in `$XDG_RUNTIME_DIR/voxtype/island-dictation.json` with
-permissions `600`. It clears the text six seconds after completion. It does not
-write audio, transcripts, or keys to the journal.
+permissions `600`. It clears the text about 1.5 seconds after completion. Error
+notices stay for six seconds. It does not write audio, transcripts, or keys to
+the journal.
 
 Run the bridge checks with `python3 -m unittest discover -s integrations/voxtype`.

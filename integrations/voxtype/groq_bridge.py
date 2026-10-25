@@ -158,7 +158,7 @@ class Transcript:
                     elif phase == "transcribing" and current != "transcribing":
                         self.value["phase"] = "transcribing"
                         self.publish()
-                elif current in ("done", "error") and time.time() * 1000 - self.value["updatedAt"] > 6000:
+                elif current in ("done", "error") and time.time() * 1000 - self.value["updatedAt"] > (1500 if current == "done" else 6000):
                     self.value.update(phase="idle", text="", error="", pending=0)
                     self.publish()
 
