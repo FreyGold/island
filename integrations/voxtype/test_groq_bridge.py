@@ -11,7 +11,7 @@ import wave
 from pathlib import Path
 from unittest.mock import patch
 
-from groq_bridge import Handler, ThreadingHTTPServer, Transcript, has_speech, merge_text, transcription_text, trim_silence
+from groq_bridge import Handler, ThreadingHTTPServer, Transcript, has_speech, merge_text, transcription_text, trim_silence, filter_standalone_thanks
 
 
 class TranscriptTests(unittest.TestCase):
@@ -106,6 +106,7 @@ class EndpointTests(unittest.TestCase):
 
     def test_rate_limit_has_a_clear_message(self):
         failure = urllib.error.HTTPError("https://api.groq.com", 429, "rate limit", {}, None)
+        self.addCleanup(failure.close)
         with patch("groq_bridge.has_speech", return_value=True), patch("groq_bridge.urllib.request.urlopen", side_effect=failure):
             status, value = self.request("/v1/audio/transcriptions", self.audio_body(600), content_type="multipart/form-data; boundary=test")
             self.assertEqual(status, 429)
@@ -123,8 +124,32 @@ class EndpointTests(unittest.TestCase):
             upstream.assert_not_called()
         self.assertEqual(self.server.transcript.value["text"], "Previous sentence.")
 
+    def test_confident_standalone_thanks_never_reaches_voxtype(self):
+        previous = self.server.transcript.reserve()
+        self.server.transcript.complete(previous, "Keep the actual dictation.")
+        response = io.BytesIO(json.dumps({"text": "Thank you.", "segments": [
+            {"text": "Thank you.", "no_speech_prob": 0.01, "avg_logprob": -0.1},
+        ]}).encode())
+        with patch("groq_bridge.has_speech", return_value=True), patch("groq_bridge.urllib.request.urlopen", return_value=response):
+            result = self.request("/v1/audio/transcriptions", self.audio_body(600), content_type="multipart/form-data; boundary=test")
+        self.assertEqual(result, (200, {"text": ""}))
+        self.assertEqual(self.server.transcript.value["text"], "Keep the actual dictation.")
+
 
 class SpeechFilterTests(unittest.TestCase):
+    def test_standalone_thanks_is_blocked_with_any_case_or_punctuation(self):
+        for text in ("Thank you.", "thank you", " THANK YOU! ", '“Thank you.”'):
+            with self.subTest(text=text):
+                self.assertEqual(filter_standalone_thanks(text), "")
+
+    def test_thanks_inside_real_sentences_is_preserved(self):
+        for text in ("Tell him thank you.", "No, thank you.", "Thank you for the help."):
+            with self.subTest(text=text):
+                self.assertEqual(filter_standalone_thanks(text), text)
+
+    def test_standalone_thanks_can_be_enabled_explicitly(self):
+        self.assertEqual(filter_standalone_thanks("Thank you.", allow=True), "Thank you.")
+
     @staticmethod
     def speech_audio(leading_frames, speech_frames, trailing_frames):
         audio = io.BytesIO()
@@ -165,7 +190,7 @@ class SpeechFilterTests(unittest.TestCase):
     def test_background_noise_does_not_count_as_speech(self):
         self.assertFalse(has_speech(EndpointTests.audio_body(600), "multipart/form-data; boundary=test"))
 
-    def test_confident_spoken_thank_you_is_kept(self):
+    def test_confidence_check_alone_accepts_thanks(self):
         value = {"text": "Thank you.", "segments": [{"text": "Thank you.", "no_speech_prob": 0.01, "avg_logprob": -0.1}]}
         self.assertEqual(transcription_text(value), "Thank you.")
 

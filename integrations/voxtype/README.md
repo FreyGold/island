@@ -26,6 +26,12 @@ upload. Later chunks must contain speech beyond the overlap with the previous
 chunk. A repeated tail with no new speech does not make another API request.
 Groq segment confidence checks also reject uncertain text from silent audio.
 
+The bridge also blocks a chunk that contains only “Thank you.”. Whisper can
+produce that phrase with high confidence over noise. This rule also removes a
+genuine “thank you” when it occupies a whole chunk. Longer phrases such as
+“tell him thank you” stay unchanged. Set
+`ISLAND_ALLOW_STANDALONE_THANK_YOU=1` in the service environment to allow it.
+
 The VoxType service loads the same environment file and starts after the bridge.
 VoxType uses these settings:
 

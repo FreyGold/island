@@ -168,6 +168,13 @@ def transcription_text(value):
     return " ".join(kept)
 
 
+def filter_standalone_thanks(text, allow=False):
+    """Block the standalone outro that can pass Whisper's confidence checks."""
+    if not allow and re.findall(r"\w+", text.casefold()) == ["thank", "you"]:
+        return ""
+    return text
+
+
 def error_message(code):
     if code in (401, 403):
         return "Groq rejected the API key."
@@ -339,7 +346,10 @@ class Handler(BaseHTTPRequestHandler):
         try:
             with urllib.request.urlopen(request, timeout=25) as response:
                 value = json.load(response)
-            text = transcription_text(value)
+            text = filter_standalone_thanks(
+                transcription_text(value),
+                allow=os.environ.get("ISLAND_ALLOW_STANDALONE_THANK_YOU") == "1",
+            )
         except urllib.error.HTTPError as error:
             message = error_message(error.code)
             transcript.complete(ticket, error=message)
