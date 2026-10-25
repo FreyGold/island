@@ -16,10 +16,16 @@ import threading
 import time
 import urllib.error
 import urllib.request
+import uuid
 import wave
 from email.parser import BytesParser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+
+try:
+    import webrtcvad
+except ImportError:
+    webrtcvad = None
 
 
 PORT = 26741
@@ -43,7 +49,7 @@ def merge_text(left, right):
 
 
 def has_speech(body, content_type):
-    """Skip near-silent WAV chunks before they use an API request."""
+    """Reject silence and background noise before they use an API request."""
     try:
         message = BytesParser(policy=email.policy.default).parsebytes(
             ("Content-Type: " + content_type + "\r\nMIME-Version: 1.0\r\n\r\n").encode() + body
@@ -54,19 +60,70 @@ def has_speech(body, content_type):
             with wave.open(io.BytesIO(part.get_payload(decode=True)), "rb") as audio:
                 if audio.getsampwidth() != 2:
                     return True
-                samples = array.array("h", audio.readframes(audio.getnframes()))
+                raw = audio.readframes(audio.getnframes())
+                samples = array.array("h", raw)
                 if os.sys.byteorder != "little":
                     samples.byteswap()
                 frame = max(1, int(audio.getframerate() * audio.getnchannels() * 0.02))
+                detector = webrtcvad.Vad(2) if webrtcvad and audio.getnchannels() == 1 and audio.getframerate() in (8000, 16000, 32000, 48000) else None
                 loud = 0
-                for start in range(0, len(samples), frame):
+                frames = len(samples) // frame
+                for start in range(0, frames * frame, frame):
                     block = samples[start:start + frame]
                     rms = (sum(s * s for s in block) / max(1, len(block))) ** 0.5 / 32768
-                    loud += rms >= 0.001
-                return loud >= 3
+                    if rms < 0.001:
+                        continue
+                    if detector is None or detector.is_speech(raw[start * 2:(start + frame) * 2], audio.getframerate()):
+                        loud += 1
+                return loud >= max(6, int(frames * 0.06))
     except (ValueError, TypeError, AttributeError, wave.Error, EOFError):
         pass
     return True
+
+
+def groq_form(body, content_type):
+    """Request segment confidence data while preserving the uploaded audio."""
+    message = BytesParser(policy=email.policy.default).parsebytes(
+        ("Content-Type: " + content_type + "\r\nMIME-Version: 1.0\r\n\r\n").encode() + body
+    )
+    boundary = "IslandGroq" + uuid.uuid4().hex
+    parts = []
+    allowed = {"file", "model", "language", "prompt"}
+    for part in message.iter_parts():
+        name = part.get_param("name", header="content-disposition")
+        if name not in allowed:
+            continue
+        disposition = f'Content-Disposition: form-data; name="{name}"'
+        if name == "file":
+            disposition += '; filename="audio.wav"\r\nContent-Type: audio/wav'
+        parts.append(f"--{boundary}\r\n{disposition}\r\n\r\n".encode() + (part.get_payload(decode=True) or b"") + b"\r\n")
+    for name, value in (("response_format", "verbose_json"), ("temperature", "0")):
+        parts.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"\r\n\r\n{value}\r\n'.encode())
+    parts.append(f"--{boundary}--\r\n".encode())
+    return b"".join(parts), "multipart/form-data; boundary=" + boundary
+
+
+def transcription_text(value):
+    """Keep spoken segments and reject uncertain text from silent audio."""
+    text = value.get("text")
+    if not isinstance(text, str):
+        raise ValueError("Invalid Groq response")
+    segments = value.get("segments")
+    if not isinstance(segments, list) or not segments:
+        return text
+    kept = []
+    for segment in segments:
+        if not isinstance(segment, dict) or not isinstance(segment.get("text"), str):
+            return text
+        no_speech = float(segment.get("no_speech_prob") or 0)
+        logprob = float(segment.get("avg_logprob") or 0)
+        compression = float(segment.get("compression_ratio") or 0)
+        if no_speech >= 0.85 or (no_speech >= 0.6 and logprob < -0.5):
+            continue
+        if logprob < -1.4 and compression > 2.4:
+            continue
+        kept.append(segment["text"].strip())
+    return " ".join(kept)
 
 
 def error_message(code):
@@ -225,6 +282,7 @@ class Handler(BaseHTTPRequestHandler):
             transcript.complete(ticket)
             self.reply(200, {"text": ""})
             return
+        body, content_type = groq_form(body, content_type)
         request = urllib.request.Request(GROQ_URL, data=body, headers={
             "Authorization": expected, "Content-Type": content_type,
             "User-Agent": "Island-Voxtype/1.0",
@@ -232,9 +290,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             with urllib.request.urlopen(request, timeout=25) as response:
                 value = json.load(response)
-            text = value.get("text")
-            if not isinstance(text, str):
-                raise ValueError("Invalid Groq response")
+            text = transcription_text(value)
         except urllib.error.HTTPError as error:
             message = error_message(error.code)
             transcript.complete(ticket, error=message)

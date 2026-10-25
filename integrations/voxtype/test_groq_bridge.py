@@ -11,7 +11,7 @@ import wave
 from pathlib import Path
 from unittest.mock import patch
 
-from groq_bridge import Handler, ThreadingHTTPServer, Transcript, has_speech, merge_text
+from groq_bridge import Handler, ThreadingHTTPServer, Transcript, has_speech, merge_text, transcription_text
 
 
 class TranscriptTests(unittest.TestCase):
@@ -97,19 +97,40 @@ class EndpointTests(unittest.TestCase):
 
     def test_cloud_result_updates_live_preview(self):
         response = io.BytesIO(b'{"text": "A live sentence."}')
-        with patch("groq_bridge.urllib.request.urlopen", return_value=response) as upstream:
+        with patch("groq_bridge.has_speech", return_value=True), patch("groq_bridge.urllib.request.urlopen", return_value=response) as upstream:
             status, value = self.request("/v1/audio/transcriptions", self.audio_body(600), content_type="multipart/form-data; boundary=test")
             self.assertEqual((status, value), (200, {"text": "A live sentence."}))
             self.assertEqual(self.server.transcript.value["text"], "A live sentence.")
             self.assertEqual(upstream.call_args.args[0].full_url, "https://api.groq.com/openai/v1/audio/transcriptions")
+            self.assertIn(b"verbose_json", upstream.call_args.args[0].data)
 
     def test_rate_limit_has_a_clear_message(self):
         failure = urllib.error.HTTPError("https://api.groq.com", 429, "rate limit", {}, None)
-        with patch("groq_bridge.urllib.request.urlopen", side_effect=failure):
+        with patch("groq_bridge.has_speech", return_value=True), patch("groq_bridge.urllib.request.urlopen", side_effect=failure):
             status, value = self.request("/v1/audio/transcriptions", self.audio_body(600), content_type="multipart/form-data; boundary=test")
             self.assertEqual(status, 429)
             self.assertEqual(value["error"], "Groq rate limit reached. Try again shortly.")
             self.assertEqual(self.server.transcript.value["pending"], 0)
+
+
+class SpeechFilterTests(unittest.TestCase):
+    def test_background_noise_does_not_count_as_speech(self):
+        self.assertFalse(has_speech(EndpointTests.audio_body(600), "multipart/form-data; boundary=test"))
+
+    def test_confident_spoken_thank_you_is_kept(self):
+        value = {"text": "Thank you.", "segments": [{"text": "Thank you.", "no_speech_prob": 0.01, "avg_logprob": -0.1}]}
+        self.assertEqual(transcription_text(value), "Thank you.")
+
+    def test_silent_thank_you_is_rejected(self):
+        value = {"text": "Thank you.", "segments": [{"text": "Thank you.", "no_speech_prob": 0.95, "avg_logprob": -1.2}]}
+        self.assertEqual(transcription_text(value), "")
+
+    def test_silent_tail_does_not_remove_the_spoken_sentence(self):
+        value = {"text": "Keep this sentence. Thank you.", "segments": [
+            {"text": "Keep this sentence.", "no_speech_prob": 0.01, "avg_logprob": -0.1},
+            {"text": "Thank you.", "no_speech_prob": 0.7, "avg_logprob": -0.8},
+        ]}
+        self.assertEqual(transcription_text(value), "Keep this sentence.")
 
 
 if __name__ == "__main__":

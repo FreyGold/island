@@ -1,0 +1,11 @@
+#!/usr/bin/python3
+"""Give VoxType text a clear clipboard type. Preserve explicit caller types."""
+
+import os
+import sys
+
+
+arguments = sys.argv[1:]
+if not any(arg in ("-t", "--type", "-c", "--clear") or arg.startswith("--type=") for arg in arguments):
+    arguments = ["--type", "text/plain;charset=utf-8", *arguments]
+os.execv("/usr/bin/wl-copy", ["/usr/bin/wl-copy", *arguments])
